@@ -1,0 +1,684 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Hẹn giờ nhắc việc — ManhTool</title>
+  <meta name="description" content="Đặt giờ đếm ngược, hết giờ là nhắc ngay việc cần làm: đứng dậy vận động, nghỉ mắt, uống nước. Có chuông, thông báo và chọn ngẫu nhiên 1 việc.">
+  <meta name="theme-color" content="#0E7C5A">
+  <meta property="og:title" content="Hẹn giờ nhắc việc — ManhTool">
+  <meta property="og:description" content="Đặt giờ, hết giờ là biết ngay cần làm gì tiếp.">
+  <meta property="og:image" content="assets/img/logo-512.png">
+  <link rel="icon" type="image/png" href="assets/img/mark-192.png">
+  <link rel="apple-touch-icon" href="assets/img/mark-192.png">
+  <link rel="manifest" href="manifest.webmanifest">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="Hẹn giờ">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <!-- Phông số cho các nền toàn màn hình: chỉ tải ký tự 0-9 và dấu hai chấm -->
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700&family=Playfair+Display:wght@700&family=Caveat:wght@700&family=JetBrains+Mono:wght@700&family=Bebas+Neue&family=DotGothic16&text=0123456789%3A&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/css/style.css">
+  <link rel="stylesheet" href="assets/css/stage.css">
+  <link rel="stylesheet" href="assets/css/account.css">
+  <script src="assets/js/boot.js"></script>
+</head>
+<body>
+  <!-- Bộ icon dùng chung (nét 2px, bo tròn) -->
+  <svg width="0" height="0" style="position:absolute" aria-hidden="true">
+    <symbol id="i-grid" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></symbol>
+    <symbol id="i-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></symbol>
+    <symbol id="i-moon" viewBox="0 0 24 24"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></symbol>
+    <symbol id="i-play" viewBox="0 0 24 24"><path d="M7 4.5v15a1 1 0 0 0 1.5.9l12-7.5a1 1 0 0 0 0-1.8l-12-7.5A1 1 0 0 0 7 4.5z"/></symbol>
+    <symbol id="i-pause" viewBox="0 0 24 24"><rect x="6" y="4" width="4" height="16" rx="1"/><rect x="14" y="4" width="4" height="16" rx="1"/></symbol>
+    <symbol id="i-reset" viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/></symbol>
+    <symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
+    <symbol id="i-trash" viewBox="0 0 24 24"><path d="M3 6h18"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></symbol>
+    <symbol id="i-list" viewBox="0 0 24 24"><path d="m3 17 2 2 4-4M3 7l2 2 4-4M13 6h8M13 12h8M13 18h8"/></symbol>
+    <symbol id="i-shuffle" viewBox="0 0 24 24"><path d="M16 3h5v5M4 20 21 3M21 16v5h-5M15 15l6 6M4 4l5 5"/></symbol>
+    <symbol id="i-volume" viewBox="0 0 24 24"><path d="M11 5 6 9H2v6h4l5 4V5z"/><path d="M15.5 8.5a5 5 0 0 1 0 7M19 5a10 10 0 0 1 0 14"/></symbol>
+    <symbol id="i-bell" viewBox="0 0 24 24"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></symbol>
+    <symbol id="i-phone-screen" viewBox="0 0 24 24"><rect x="5" y="2" width="14" height="20" rx="2"/><path d="M12 18h.01"/></symbol>
+    <symbol id="i-alarm" viewBox="0 0 24 24"><circle cx="12" cy="13" r="8"/><path d="M12 9v4l2 2M5 3 2 6M22 6l-3-3M6.4 18.6 4 21M17.6 18.6 20 21"/></symbol>
+    <symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></symbol>
+    <symbol id="i-check" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></symbol>
+    <symbol id="i-heart" viewBox="0 0 24 24"><path d="M19 14c1.5-1.5 3-3.2 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.8 0-3 .5-4.5 2-1.5-1.5-2.7-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4 3 5.5l7 7z"/></symbol>
+    <symbol id="i-zoom" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3M11 8v6M8 11h6"/></symbol>
+    <symbol id="i-scan" viewBox="0 0 24 24"><path d="M3 7V5a2 2 0 0 1 2-2h2M17 3h2a2 2 0 0 1 2 2v2M21 17v2a2 2 0 0 1-2 2h-2M7 21H5a2 2 0 0 1-2-2v-2"/><path d="M7 12h10"/></symbol>
+    <symbol id="i-copy" viewBox="0 0 24 24"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></symbol>
+    <symbol id="i-phone" viewBox="0 0 24 24"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1 1 .4 1.9.7 2.8a2 2 0 0 1-.5 2.1L8.1 9.9a16 16 0 0 0 6 6l1.3-1.3a2 2 0 0 1 2.1-.4c.9.3 1.8.6 2.8.7a2 2 0 0 1 1.7 2z"/></symbol>
+    <symbol id="i-chat" viewBox="0 0 24 24"><path d="M21 12a8 8 0 0 1-11.6 7.1L4 20.5l1.4-4.6A8 8 0 1 1 21 12z"/></symbol>
+    <symbol id="i-code" viewBox="0 0 24 24"><path d="m16 18 6-6-6-6M8 6l-6 6 6 6"/></symbol>
+    <symbol id="i-lock" viewBox="0 0 24 24"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></symbol>
+    <symbol id="i-keyboard" viewBox="0 0 24 24"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M6 9h.01M10 9h.01M14 9h.01M18 9h.01M6 13h.01M18 13h.01M9 15h6"/></symbol>
+    <symbol id="i-globe" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20M2 12h20"/></symbol>
+    <symbol id="i-arrow-right" viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></symbol>
+    <symbol id="i-megaphone" viewBox="0 0 24 24"><path d="m3 11 18-5v12L3 14v-3zM11.6 16.8a3 3 0 1 1-5.8-1.6"/></symbol>
+    <symbol id="i-sparkles" viewBox="0 0 24 24"><path d="M9.94 15.5A2 2 0 0 0 8.5 14.06l-6.13-1.58a.5.5 0 0 1 0-.96L8.5 9.94A2 2 0 0 0 9.94 8.5l1.58-6.13a.5.5 0 0 1 .96 0L14.06 8.5A2 2 0 0 0 15.5 9.94l6.13 1.58a.5.5 0 0 1 0 .96L15.5 14.06a2 2 0 0 0-1.44 1.44l-1.58 6.13a.5.5 0 0 1-.96 0z"/></symbol>
+    <symbol id="i-x" viewBox="0 0 24 24"><path d="M18 6 6 18M6 6l12 12"/></symbol>
+    <symbol id="i-maximize" viewBox="0 0 24 24"><path d="M8 3H5a2 2 0 0 0-2 2v3M21 8V5a2 2 0 0 0-2-2h-3M3 16v3a2 2 0 0 0 2 2h3M16 21h3a2 2 0 0 0 2-2v-3"/></symbol>
+    <symbol id="i-minimize" viewBox="0 0 24 24"><path d="M8 3v3a2 2 0 0 1-2 2H3M21 8h-3a2 2 0 0 1-2-2V3M3 16h3a2 2 0 0 1 2 2v3M16 21v-3a2 2 0 0 1 2-2h3"/></symbol>
+    <symbol id="i-palette" viewBox="0 0 24 24"><path d="M12 22a10 10 0 1 1 10-10c0 2.8-2.2 4-4 4h-2a2 2 0 0 0-1.5 3.3A1.7 1.7 0 0 1 12 22z"/><circle cx="7.5" cy="10.5" r="1"/><circle cx="12" cy="7" r="1"/><circle cx="16.5" cy="10.5" r="1"/></symbol>
+    <symbol id="i-repeat" viewBox="0 0 24 24"><path d="m17 2 4 4-4 4"/><path d="M3 11v-1a4 4 0 0 1 4-4h14"/><path d="m7 22-4-4 4-4"/><path d="M21 13v1a4 4 0 0 1-4 4H3"/></symbol>
+    <symbol id="i-hourglass" viewBox="0 0 24 24"><path d="M5 22h14M5 2h14M17 22v-4.2a2 2 0 0 0-.6-1.4L12 12l-4.4 4.4a2 2 0 0 0-.6 1.4V22M7 2v4.2a2 2 0 0 0 .6 1.4L12 12l4.4-4.4a2 2 0 0 0 .6-1.4V2"/></symbol>
+    <symbol id="i-check-circle" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></symbol>
+    <symbol id="i-pip" viewBox="0 0 24 24"><rect x="2" y="4" width="20" height="16" rx="2"/><rect x="12" y="11" width="7" height="6" rx="1"/></symbol>
+    <symbol id="i-share" viewBox="0 0 24 24"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="m8.6 13.5 6.8 4M15.4 6.5l-6.8 4"/></symbol>
+    <symbol id="i-bookmark" viewBox="0 0 24 24"><path d="M19 21l-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></symbol>
+    <symbol id="i-layers" viewBox="0 0 24 24"><path d="m12 2 10 5-10 5L2 7z"/><path d="m2 17 10 5 10-5M2 12l10 5 10-5"/></symbol>
+    <symbol id="i-image" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.1-3.1a2 2 0 0 0-2.8 0L6 21"/></symbol>
+    <symbol id="i-install" viewBox="0 0 24 24"><path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M5 21h14"/></symbol>
+    <symbol id="i-chart" viewBox="0 0 24 24"><path d="M3 3v18h18"/><path d="M8 17v-4M13 17V8M18 17v-7"/></symbol>
+    <symbol id="i-speak" viewBox="0 0 24 24"><path d="M11 5 6 9H2v6h4l5 4V5z"/><path d="M15.5 8.5a5 5 0 0 1 0 7"/><path d="M19 12h3"/></symbol>
+    <symbol id="i-grip" viewBox="0 0 24 24"><circle cx="9" cy="6" r="1"/><circle cx="15" cy="6" r="1"/><circle cx="9" cy="12" r="1"/><circle cx="15" cy="12" r="1"/><circle cx="9" cy="18" r="1"/><circle cx="15" cy="18" r="1"/></symbol>
+    <symbol id="i-flag" viewBox="0 0 24 24"><path d="M4 22V4a1 1 0 0 1 1-1h12l-2 4 2 4H5"/></symbol>
+    <symbol id="i-focus" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M3 7V5a2 2 0 0 1 2-2h2M17 3h2a2 2 0 0 1 2 2v2M21 17v2a2 2 0 0 1-2 2h-2M7 21H5a2 2 0 0 1-2-2v-2"/></symbol>
+    <symbol id="i-help" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M9.1 9a3 3 0 0 1 5.8 1c0 2-3 3-3 3"/><path d="M12 17h.01"/></symbol>
+    <symbol id="i-gift" viewBox="0 0 24 24"><rect x="3" y="8" width="18" height="4" rx="1"/><path d="M12 8v13M19 12v7a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2v-7"/><path d="M7.5 8a2.5 2.5 0 0 1 0-5C10 3 12 8 12 8s2-5 4.5-5a2.5 2.5 0 0 1 0 5"/></symbol>
+    <symbol id="i-google" viewBox="0 0 24 24"><path d="M21.6 12.2c0-.7-.1-1.4-.2-2H12v3.8h5.4a4.6 4.6 0 0 1-2 3v2.5h3.2c1.9-1.7 3-4.3 3-7.3z"/><path d="M12 22c2.7 0 5-.9 6.6-2.4l-3.2-2.5c-.9.6-2 1-3.4 1-2.6 0-4.8-1.8-5.6-4.1H3.1v2.6A10 10 0 0 0 12 22z"/><path d="M6.4 14a6 6 0 0 1 0-3.9V7.5H3.1a10 10 0 0 0 0 9z"/><path d="M12 5.9c1.5 0 2.8.5 3.8 1.5l2.9-2.9A10 10 0 0 0 3.1 7.5l3.3 2.6C7.2 7.7 9.4 5.9 12 5.9z"/></symbol>
+    <symbol id="i-sync" viewBox="0 0 24 24"><path d="M21 12a9 9 0 0 1-15.5 6.2L3 16"/><path d="M3 21v-5h5"/><path d="M3 12a9 9 0 0 1 15.5-6.2L21 8"/><path d="M21 3v5h-5"/></symbol>
+    <symbol id="i-logout" viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="m16 17 5-5-5-5M21 12H9"/></symbol>
+    <symbol id="i-shield" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></symbol>
+    <symbol id="i-pencil" viewBox="0 0 24 24"><path d="M17 3a2.8 2.8 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5z"/></symbol>
+    <symbol id="i-restore" viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/><path d="M12 7v5l3 2"/></symbol>
+  </svg>
+
+  <a class="skip-link" href="#btnStart">Đến nút bắt đầu</a>
+
+  <header class="site-header">
+    <div class="container header-inner">
+      <a class="brand" href="https://manhtool.id.vn" aria-label="ManhTool - Trang chủ">
+        <img class="brand-mark" src="assets/img/mark-192.png" alt="" width="36" height="36">
+        <span class="brand-name">Manh<span class="brand-accent">Tool</span></span>
+      </a>
+      <nav class="header-actions" aria-label="Điều hướng">
+        <button class="header-link header-install" type="button" id="btnInstall" hidden title="Cài thành ứng dụng trên máy, dùng được cả khi không có mạng">
+          <svg class="ic"><use href="#i-install"/></svg><span>Cài ứng dụng</span>
+        </button>
+        <a class="header-link" href="https://manhtool.id.vn">
+          <svg class="ic"><use href="#i-grid"/></svg><span>Tất cả công cụ</span>
+        </a>
+        <button class="icon-btn" id="btnHelp" type="button" aria-label="Hướng dẫn nhanh" title="Hướng dẫn nhanh (phím ?)"><svg class="ic"><use href="#i-help"/></svg></button>
+        <button class="icon-btn" id="themeToggle" type="button" aria-label="Đổi nền sáng/tối" title="Đổi nền sáng/tối">
+          <svg class="ic icon-sun"><use href="#i-sun"/></svg>
+          <svg class="ic icon-moon"><use href="#i-moon"/></svg>
+        </button>
+        <button class="login-btn" type="button" id="btnLogin" hidden title="Đăng nhập để lưu dữ liệu theo tài khoản, dùng trên mọi thiết bị">
+          <svg class="ic"><use href="#i-google"/></svg><span>Đăng nhập</span>
+        </button>
+        <button class="avatar-btn" type="button" id="btnAccount" hidden>
+          <img alt="" width="34" height="34" referrerpolicy="no-referrer" hidden><span class="avatar-ini" hidden></span>
+          <span class="sync-dot" aria-hidden="true"></span>
+        </button>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <section class="hero container">
+      <h1>Hẹn giờ <span class="grad-text">nhắc việc</span></h1>
+      <p>Đặt giờ, hết giờ là biết ngay cần làm gì tiếp.</p>
+    </section>
+
+    <!-- Gợi ý nền khi sắp tới ngày lễ -->
+    <div class="container occasion-wrap">
+      <div class="occasion-hint" id="occasionHint" hidden>
+        <span class="occ-ico"><svg class="ic"><use href="#i-gift"/></svg></span>
+        <span class="occ-text" id="occasionText"></span>
+        <button class="btn-primary occ-try" type="button" id="occasionTry">Xem thử</button>
+        <button class="icon-btn occ-close" type="button" id="occasionClose" aria-label="Ẩn gợi ý"><svg class="ic"><use href="#i-x"/></svg></button>
+      </div>
+    </div>
+
+    <div class="container layout">
+      <div class="main-col">
+      <section class="card tool" aria-label="Hẹn giờ nhắc việc">
+        <div class="tool-grid">
+          <!-- Đồng hồ -->
+          <div class="timer-pane" id="timerBox" data-status="idle">
+            <div class="timer-top">
+              <span class="today" id="todayStats"><svg class="ic"><use href="#i-check-circle"/></svg><span>Hôm nay chưa có lượt nào</span></span>
+              <div class="timer-top-actions">
+                <button class="ctl ctl-compact" type="button" id="btnCompact" aria-pressed="false" title="Thu gọn: chỉ còn đồng hồ (G)" aria-label="Thu gọn, chỉ còn đồng hồ"><svg class="ic"><use href="#i-focus"/></svg><span>Thu gọn</span></button>
+                <button class="ctl" type="button" id="btnPip" hidden title="Cửa sổ nổi: luôn nằm trên các ứng dụng khác (P)" aria-label="Mở cửa sổ nổi"><svg class="ic"><use href="#i-pip"/></svg></button>
+                <button class="ctl ctl-fs" type="button" id="btnStage" title="Toàn màn hình (F)" aria-label="Toàn màn hình"><svg class="ic"><use href="#i-maximize"/></svg><span>Toàn màn hình</span></button>
+              </div>
+            </div>
+            <div class="seg mode-seg" role="radiogroup" aria-label="Kiểu hẹn giờ">
+              <button type="button" role="radio" data-mode="single"><svg class="ic"><use href="#i-clock"/></svg>Đếm 1 lần</button>
+              <button type="button" role="radio" data-mode="plan"><svg class="ic"><use href="#i-layers"/></svg>Chuỗi nhiều bước</button>
+            </div>
+            <div class="dial">
+              <svg class="ring" viewBox="0 0 220 220" aria-hidden="true">
+                <circle class="ring-track" cx="110" cy="110" r="100"/>
+                <circle class="ring-bar" id="ringBar" cx="110" cy="110" r="100"/>
+              </svg>
+              <div class="dial-center">
+                <span class="time" id="timeText" role="timer" aria-label="Thời gian còn lại">45:00</span>
+                <span class="time-sub" id="timeSub">45 phút</span>
+              </div>
+            </div>
+
+            <div class="setter">
+              <div class="hms" role="group" aria-label="Đặt thời gian">
+                <label class="hms-field"><input id="inH" type="number" min="0" max="23" inputmode="numeric" aria-label="Giờ"><span>giờ</span></label>
+                <span class="hms-colon" aria-hidden="true">:</span>
+                <label class="hms-field"><input id="inM" type="number" min="0" max="999" inputmode="numeric" aria-label="Phút"><span>phút</span></label>
+                <span class="hms-colon" aria-hidden="true">:</span>
+                <label class="hms-field"><input id="inS" type="number" min="0" max="999" inputmode="numeric" aria-label="Giây"><span>giây</span></label>
+              </div>
+              <div class="presets" role="group" aria-label="Chọn nhanh">
+                <button class="chip" type="button" data-preset="1">1 phút</button>
+                <button class="chip" type="button" data-preset="5">5 phút</button>
+                <button class="chip" type="button" data-preset="10">10 phút</button>
+                <button class="chip" type="button" data-preset="15">15 phút</button>
+                <button class="chip" type="button" data-preset="25">25 phút</button>
+                <button class="chip" type="button" data-preset="30">30 phút</button>
+                <button class="chip" type="button" data-preset="45">45 phút</button>
+                <button class="chip" type="button" data-preset="60">1 giờ</button>
+              </div>
+              <div class="until">
+                <label class="until-head" for="inUntil">
+                  <svg class="ic"><use href="#i-flag"/></svg><span>Hoặc hết giờ lúc</span>
+                </label>
+                <div class="until-row" id="untilChips" role="group" aria-label="Giờ gợi ý">
+                  <input id="inUntil" class="until-input" type="text" inputmode="numeric" maxlength="5" placeholder="hh:mm" autocomplete="off" aria-label="Hết giờ lúc, dạng giờ:phút (24 giờ)" title="Gõ giờ kiểu 24 giờ, ví dụ 1730 hoặc 17:30">
+                </div>
+              </div>
+            </div>
+
+            <!-- Chuỗi nhiều bước -->
+            <div class="plan-box">
+              <ol class="plan-steps" id="planSteps"></ol>
+              <div class="plan-row">
+                <button class="chip" type="button" id="btnAddStep"><svg class="ic"><use href="#i-plus"/></svg>Thêm bước</button>
+                <label class="plan-repeat">Lặp lại
+                  <input type="number" id="planRepeat" min="1" max="20" inputmode="numeric" class="select" aria-label="Số vòng lặp lại"> vòng
+                </label>
+              </div>
+              <p class="plan-total" id="planTotal"></p>
+              <div class="presets" id="planTemplates" role="group" aria-label="Chuỗi mẫu"></div>
+            </div>
+
+            <!-- Tiến trình chuỗi khi đang chạy -->
+            <ol class="seq-track" id="seqTrack" aria-label="Các bước"></ol>
+
+            <div class="controls">
+              <button class="ctl" type="button" id="btnReset" title="Đặt lại (R)" aria-label="Đặt lại"><svg class="ic"><use href="#i-reset"/></svg></button>
+              <button class="btn-primary btn-start" type="button" id="btnStart" title="Phím cách">
+                <svg class="ic ic-play"><use href="#i-play"/></svg><svg class="ic ic-pause"><use href="#i-pause"/></svg><span>Bắt đầu</span>
+              </button>
+              <button class="ctl ctl-add" type="button" id="btnAddMin" title="Thêm 1 phút" aria-label="Thêm 1 phút"><svg class="ic"><use href="#i-plus"/></svg><span>1 phút</span></button>
+            </div>
+          </div>
+
+          <!-- Danh sách việc -->
+          <div class="task-pane">
+            <div class="pane-head">
+              <h2>Hết giờ thì làm gì?</h2>
+              <span class="pane-count" id="taskCount"></span>
+            </div>
+
+            <div class="seg" role="radiogroup" aria-label="Cách nhắc">
+              <button type="button" role="radio" data-pick="list"><svg class="ic"><use href="#i-list"/></svg>Cả danh sách</button>
+              <button type="button" role="radio" data-pick="random"><svg class="ic"><use href="#i-shuffle"/></svg>Ngẫu nhiên 1 việc</button>
+            </div>
+
+            <form class="task-add" id="taskForm" autocomplete="off">
+              <label for="taskInput" class="visually-hidden">Việc cần làm</label>
+              <input id="taskInput" type="text" maxlength="120" placeholder="Thêm việc, ví dụ: Đứng dậy vươn vai">
+              <button class="btn-primary" type="submit" aria-label="Thêm việc"><svg class="ic"><use href="#i-plus"/></svg><span>Thêm</span></button>
+            </form>
+
+            <ol class="task-list" id="taskList"></ol>
+            <p class="task-empty" id="taskEmpty">Chưa có việc nào. Gõ vào ô trên hoặc chọn một mẫu bên dưới.</p>
+
+            <div class="templates">
+              <span class="templates-label">Mẫu có sẵn</span>
+              <div class="templates-row" id="templates"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="options">
+          <div class="opt-group" role="group" aria-label="Âm thanh">
+            <span class="opt-title">Âm thanh</span>
+            <label class="opt">
+              <input type="checkbox" id="optSound"><span class="switch" aria-hidden="true"></span>Bật chuông
+            </label>
+            <select class="select" id="optSoundType" aria-label="Kiểu chuông"></select>
+            <label class="vol" title="Âm lượng"><svg class="ic"><use href="#i-volume"/></svg><input type="range" id="optVolume" min="0" max="100" step="5" aria-label="Âm lượng"></label>
+            <button class="link-btn" type="button" id="btnTestSound">Nghe thử</button>
+            <label class="opt" id="optSpeakWrap" hidden>
+              <input type="checkbox" id="optSpeak"><span class="switch" aria-hidden="true"></span>
+              <svg class="ic"><use href="#i-speak"/></svg>Đọc to việc cần làm
+            </label>
+          </div>
+          <div class="opt-group" role="group" aria-label="Cách nhắc">
+            <span class="opt-title">Nhắc</span>
+            <label class="opt-select"><svg class="ic"><use href="#i-hourglass"/></svg>Báo trước
+              <select class="select" id="optPre">
+                <option value="0">Không</option>
+                <option value="1">1 phút</option>
+                <option value="2">2 phút</option>
+                <option value="5">5 phút</option>
+              </select>
+            </label>
+            <label class="opt">
+              <input type="checkbox" id="optLoop"><span class="switch" aria-hidden="true"></span>
+              <svg class="ic"><use href="#i-repeat"/></svg>Tự đếm lại khi hết giờ
+            </label>
+            <label class="opt">
+              <input type="checkbox" id="optNotify"><span class="switch" aria-hidden="true"></span>
+              <svg class="ic"><use href="#i-bell"/></svg>Báo cả khi đang ở tab khác
+            </label>
+            <label class="opt" id="optWakeWrap" hidden>
+              <input type="checkbox" id="optWake"><span class="switch" aria-hidden="true"></span>
+              <svg class="ic"><use href="#i-phone-screen"/></svg>Giữ màn hình sáng
+            </label>
+          </div>
+        </div>
+      </section>
+
+      <section class="card saved-card" aria-labelledby="savedTitle">
+        <div class="theme-head">
+          <div>
+            <h2 id="savedTitle">Hẹn giờ đã lưu</h2>
+            <p>Lưu lại thời gian, danh sách việc và nền đang dùng để lần sau bấm 1 lần là xong.</p>
+          </div>
+          <div class="saved-actions">
+            <button class="btn-ghost" type="button" id="btnShare"><svg class="ic"><use href="#i-share"/></svg><span>Chia sẻ liên kết</span></button>
+            <button class="btn-primary" type="button" id="btnSave"><svg class="ic"><use href="#i-bookmark"/></svg><span>Lưu cài đặt này</span></button>
+          </div>
+        </div>
+        <form class="save-form" id="saveForm" hidden autocomplete="off">
+          <label for="saveName" class="visually-hidden">Tên</label>
+          <input id="saveName" type="text" maxlength="40" placeholder="Đặt tên, ví dụ: Đứng dậy buổi sáng">
+          <button class="btn-primary" type="submit">Lưu</button>
+          <button class="btn-ghost" type="button" id="saveCancel">Hủy</button>
+        </form>
+        <ul class="saved-list" id="savedList"></ul>
+        <p class="task-empty" id="savedEmpty">Chưa lưu cái nào.</p>
+      </section>
+
+      <section class="card theme-card" aria-labelledby="themeTitle">
+        <div class="theme-head">
+          <div>
+            <h2 id="themeTitle">Giao diện toàn màn hình</h2>
+            <p>Chọn nền rồi mở toàn màn hình để treo lên màn hình phụ, TV hay máy chiếu trong lớp học, phòng họp.</p>
+          </div>
+          <button class="btn-primary" type="button" id="btnStage2"><svg class="ic"><use href="#i-maximize"/></svg><span>Mở toàn màn hình</span></button>
+        </div>
+        <div class="theme-extra">
+          <label class="title-field">
+            <span>Tiêu đề trên màn hình lớn</span>
+            <input type="text" class="title-input" data-title maxlength="80" placeholder="Ví dụ: Kiểm tra 15 phút — Lớp 10A">
+          </label>
+          <button class="btn-ghost photo-btn" type="button" data-photo hidden><svg class="ic"><use href="#i-image"/></svg><span>Đổi ảnh nền</span></button>
+        </div>
+        <div class="theme-filter" id="themeFilter" role="group" aria-label="Lọc nền">
+          <button class="chip" type="button" data-filter="all" aria-pressed="true">Tất cả <b data-count="all"></b></button>
+          <button class="chip" type="button" data-filter="free" aria-pressed="false">Miễn phí <b data-count="free"></b></button>
+          <button class="chip" type="button" data-filter="pro" aria-pressed="false">Pro <b data-count="pro"></b></button>
+          <button class="chip" type="button" data-filter="season" aria-pressed="false">Ngày lễ &amp; dịp đặc biệt <b data-count="season"></b></button>
+        </div>
+        <div class="theme-grid" id="themeGrid"></div>
+        <p class="theme-note" id="themeNote"><em class="tile-badge">PRO</em>Các nền Pro đang cho dùng thử miễn phí.</p>
+        <div class="shop-note" id="shopNote" hidden>
+          <div><b>Mở khóa nền Pro</b><span id="shopNoteText"></span></div>
+          <button class="btn-primary" type="button" id="shopNoteBtn">Xem bảng giá</button>
+        </div>
+      </section>
+      </div>
+
+      <aside class="side">
+        <section class="card side-card week-card" aria-labelledby="weekTitle">
+          <div class="side-head">
+            <span class="side-icon"><svg class="ic"><use href="#i-chart"/></svg></span>
+            <div>
+              <h2 id="weekTitle">Thời gian đã đếm</h2>
+              <p id="weekSum">7 ngày qua</p>
+            </div>
+          </div>
+          <div class="week-chart" id="weekChart" role="img"></div>
+          <table class="visually-hidden" id="weekTable"><caption>Thời gian đã đếm 7 ngày qua</caption><thead><tr><th>Ngày</th><th>Số lượt</th><th>Thời gian</th></tr></thead><tbody></tbody></table>
+        </section>
+
+        <section class="card side-card donate">
+          <div class="side-head">
+            <span class="side-icon"><svg class="ic"><use href="#i-heart"/></svg></span>
+            <div>
+              <h2>Ủng hộ ManhTool</h2>
+              <p>Để công cụ luôn miễn phí</p>
+            </div>
+          </div>
+          <button type="button" class="qr-frame" id="qrOpen" aria-label="Phóng to mã QR">
+            <img src="assets/img/donate-qr.png" alt="Mã QR chuyển khoản Techcombank" width="400" height="486" loading="lazy">
+            <span class="qr-zoom"><svg class="ic"><use href="#i-zoom"/></svg>Phóng to</span>
+          </button>
+          <p class="side-note"><svg class="ic"><use href="#i-scan"/></svg>Quét bằng app ngân hàng bất kỳ</p>
+        </section>
+
+        <section class="card side-card shortcuts-card">
+          <div class="side-head">
+            <span class="side-icon"><svg class="ic"><use href="#i-keyboard"/></svg></span>
+            <div><h2>Phím tắt</h2></div>
+          </div>
+          <dl class="shortcuts">
+            <dt><kbd>Space</kbd></dt><dd>Bắt đầu / Tạm dừng</dd>
+            <dt><kbd>R</kbd></dt><dd>Đặt lại</dd>
+            <dt><kbd>F</kbd></dt><dd>Toàn màn hình</dd>
+            <dt><kbd>T</kbd></dt><dd>Đổi nền (khi toàn màn hình)</dd>
+            <dt><kbd>P</kbd></dt><dd>Cửa sổ nổi</dd>
+            <dt><kbd>G</kbd></dt><dd>Thu gọn / mở rộng</dd>
+            <dt><kbd>?</kbd></dt><dd>Hướng dẫn nhanh</dd>
+            <dt><kbd>N</kbd></dt><dd>Sang bước tiếp (chuỗi)</dd>
+            <dt><kbd>+</kbd></dt><dd>Thêm 1 phút</dd>
+            <dt><kbd>Enter</kbd></dt><dd>Thêm việc (trong ô)</dd>
+            <dt><kbd>Esc</kbd></dt><dd>Tắt chuông, đóng</dd>
+          </dl>
+        </section>
+      </aside>
+    </div>
+
+    <section class="container guide" aria-labelledby="guideTitle">
+      <h2 id="guideTitle">Vài cách dùng hay</h2>
+      <div class="guide-grid">
+        <div class="guide-item"><code>45 phút</code><h3>Ngồi lâu thì đứng dậy</h3><p>Ngồi làm việc cả buổi dễ mỏi lưng. Cứ 45 phút đứng lên vươn vai, đi lại vài vòng.</p></div>
+        <div class="guide-item"><code>20 phút</code><h3>Nghỉ mắt 20-20-20</h3><p>Mỗi 20 phút nhìn ra xa khoảng 6 mét trong 20 giây cho mắt đỡ khô.</p></div>
+        <div class="guide-item"><code>25 phút</code><h3>Tập trung kiểu Pomodoro</h3><p>Làm 25 phút không xen việc khác, rồi nghỉ 5 phút.</p></div>
+        <div class="guide-item"><code>Ngẫu nhiên</code><h3>Bốc thăm việc</h3><p>Ghi vài việc nhà hoặc bài tập, hết giờ để công cụ chọn hộ 1 việc.</p></div>
+      </div>
+      <p class="privacy"><svg class="ic"><use href="#i-phone-screen"/></svg>Để trang mở trong lúc đếm. Trên điện thoại nên bật "Giữ màn hình sáng" vì khóa máy có thể làm trình duyệt ngừng chạy.</p>
+      <p class="privacy"><svg class="ic"><use href="#i-lock"/></svg>Danh sách việc chỉ lưu trên máy bạn, không gửi đi đâu.</p>
+    </section>
+
+    <!-- ===== Giới thiệu ManhTool + Dịch vụ (khối chung cho mọi công cụ ManhTool) ===== -->
+    <section class="container brand-section" aria-label="Về ManhTool">
+      <div class="brand-card">
+        <img class="brand-logo" src="assets/img/logo-512.png" alt="Logo ManhTool – Công cụ hữu ích, dùng ngay" width="512" height="512" loading="lazy">
+        <div class="brand-body">
+          <span class="eyebrow"><svg class="ic"><use href="#i-sparkles"/></svg>Về chúng tôi</span>
+          <h2>ManhTool — Kho công cụ trực tuyến</h2>
+          <p class="brand-slogan">Những công cụ nhỏ – Tạo nên giá trị lớn.</p>
+          <p>Khám phá kho công cụ trực tuyến giúp bạn làm việc <b>nhanh hơn</b>, <b>đơn giản hơn</b> và <b>hiệu quả hơn</b>.</p>
+          <a class="btn-primary" href="https://manhtool.id.vn">
+            <svg class="ic"><use href="#i-grid"/></svg><span>Xem tất cả công cụ</span><svg class="ic"><use href="#i-arrow-right"/></svg>
+          </a>
+        </div>
+      </div>
+
+      <div class="hire-card">
+        <span class="hire-label">Hợp tác cùng ManhTool</span>
+        <h2>Bạn cần quảng cáo hoặc phát triển website/app?</h2>
+        <p>ManhTool nhận hợp tác quảng cáo, thiết kế và phát triển website, ứng dụng theo yêu cầu.</p>
+        <ul class="hire-services">
+          <li><svg class="ic"><use href="#i-megaphone"/></svg>Hợp tác quảng cáo</li>
+          <li><svg class="ic"><use href="#i-sparkles"/></svg>Thiết kế website</li>
+          <li><svg class="ic"><use href="#i-code"/></svg>Phát triển website, ứng dụng</li>
+        </ul>
+        <a class="hire-phone" href="tel:0988392321">
+          <span class="hp-ico"><svg class="ic"><use href="#i-phone"/></svg></span>
+          <span><small>Liên hệ ngay</small><b>0988 392 321</b></span>
+        </a>
+        <div class="hire-actions">
+          <button class="btn-ghost-light" type="button" data-copy="0988392321"><svg class="ic"><use href="#i-copy"/></svg>Chép số điện thoại</button>
+          <a class="btn-ghost-light" href="https://zalo.me/0988392321" target="_blank" rel="noopener"><svg class="ic"><use href="#i-chat"/></svg>Zalo</a>
+          <a class="btn-ghost-light" href="https://manhtool.id.vn" target="_blank" rel="noopener"><svg class="ic"><use href="#i-globe"/></svg>Xem website</a>
+        </div>
+        <p class="hire-tags">Tư vấn nhanh · Hỗ trợ tận tâm · Giải pháp theo nhu cầu</p>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container footer-inner">
+      <a class="footer-brand" href="https://manhtool.id.vn">
+        <img src="assets/img/mark-192.png" alt="" width="28" height="28">
+        <span><strong>ManhTool</strong> · Những công cụ nhỏ – Tạo nên giá trị lớn.</span>
+      </a>
+      <span class="footer-copy">© 2026 manhtool.id.vn</span>
+    </div>
+  </footer>
+
+  <!-- Khung toàn màn hình -->
+  <div class="stage" id="stage" hidden data-status="idle" data-style="ring" role="region" aria-label="Đồng hồ toàn màn hình">
+    <div class="stage-bg"></div>
+    <div class="fx" id="stageFx"></div>
+
+    <div class="stage-top">
+      <span class="stage-clock" id="stageClock" aria-label="Giờ hiện tại"></span>
+      <div class="stage-top-actions">
+        <button class="st-btn" type="button" id="stagePanelBtn" title="Đổi nền, kiểu hiển thị (T: đổi nền nhanh)"><svg class="ic"><use href="#i-palette"/></svg><span class="st-label">Giao diện</span></button>
+        <button class="st-btn st-icon" type="button" id="stageExit" title="Thoát toàn màn hình (F)" aria-label="Thoát toàn màn hình"><svg class="ic"><use href="#i-minimize"/></svg></button>
+      </div>
+    </div>
+
+    <div class="stage-main">
+      <div class="stage-title" id="stageTitle"></div>
+      <div class="stage-step" id="stageStep"></div>
+      <div class="stage-dial">
+        <svg class="stage-ring" viewBox="0 0 220 220" aria-hidden="true">
+          <defs>
+            <linearGradient id="stGrad" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0" style="stop-color: var(--st-accent2)"/>
+              <stop offset="1" style="stop-color: var(--st-accent)"/>
+            </linearGradient>
+          </defs>
+          <circle class="sr-track" cx="110" cy="110" r="100"/>
+          <circle class="sr-bar" id="stageRing" cx="110" cy="110" r="100"/>
+        </svg>
+        <div class="stage-center">
+          <div class="stage-time" id="stageTime" role="timer">00:00</div>
+          <div class="stage-sub" id="stageSub"></div>
+        </div>
+      </div>
+      <div class="stage-bar" aria-hidden="true"><span id="stageBar"></span></div>
+      <p class="stage-next" id="stageNext"></p>
+    </div>
+
+    <div class="stage-controls">
+      <button class="st-btn st-icon" type="button" id="stageReset" title="Đặt lại (R)" aria-label="Đặt lại"><svg class="ic"><use href="#i-reset"/></svg></button>
+      <button class="st-btn st-start" type="button" id="stageStart"><svg class="ic ic-play"><use href="#i-play"/></svg><svg class="ic ic-pause"><use href="#i-pause"/></svg><span>Bắt đầu</span></button>
+      <button class="st-btn st-add" type="button" id="stageAdd" title="Thêm 1 phút" aria-label="Thêm 1 phút"><svg class="ic"><use href="#i-plus"/></svg><span class="st-label">1 phút</span></button>
+      <button class="st-btn st-icon st-skip" type="button" id="stageSkip" title="Sang bước tiếp (N)" aria-label="Sang bước tiếp"><svg class="ic"><use href="#i-arrow-right"/></svg></button>
+    </div>
+
+    <aside class="stage-panel" id="stagePanel" hidden aria-label="Giao diện">
+      <div class="panel-head">
+        <h2>Giao diện</h2>
+        <button class="st-btn st-icon" type="button" id="stagePanelClose" aria-label="Đóng"><svg class="ic"><use href="#i-x"/></svg></button>
+      </div>
+      <div>
+        <div class="panel-label">Kiểu hiển thị</div>
+        <div class="panel-seg" role="radiogroup" aria-label="Kiểu hiển thị">
+          <button type="button" role="radio" data-style="ring">Vòng tròn</button>
+          <button type="button" role="radio" data-style="bar">Thanh ngang</button>
+          <button type="button" role="radio" data-style="digits">Chỉ số</button>
+          <button type="button" role="radio" data-style="flip">Lật số</button>
+        </div>
+      </div>
+      <label class="title-field panel-title">
+        <span class="panel-label">Tiêu đề</span>
+        <input type="text" class="title-input" data-title maxlength="80" placeholder="Ví dụ: Kiểm tra 15 phút — Lớp 10A">
+      </label>
+      <div class="panel-toggles">
+        <label class="opt"><input type="checkbox" id="optStageClock"><span class="switch" aria-hidden="true"></span>Hiện giờ hiện tại</label>
+        <label class="opt"><input type="checkbox" id="optStageNext"><span class="switch" aria-hidden="true"></span>Hiện việc sắp làm</label>
+        <label class="opt opt-hint"><input type="checkbox" id="optStageFocus"><span class="switch" aria-hidden="true"></span><span>Chế độ tập trung<small>Đang chạy thì ẩn việc sắp làm và giờ hiện tại, phút cuối mới hiện lại</small></span></label>
+      </div>
+      <div>
+        <div class="panel-label">Nền</div>
+        <div class="theme-grid" id="stageThemeGrid"></div>
+        <button class="st-btn photo-btn panel-photo" type="button" data-photo hidden><svg class="ic"><use href="#i-image"/></svg><span>Đổi ảnh nền</span></button>
+      </div>
+    </aside>
+  </div>
+
+  <!-- Hộp mở khóa nền Pro (chỉ dùng khi bật bán nền) -->
+  <dialog id="unlockDialog" class="unlock-dialog" aria-labelledby="unlockTitle">
+    <div class="tile-art unlock-art" id="unlockArt"><span class="fx"></span><span class="tile-time">25:00</span></div>
+    <div class="unlock-body">
+      <h2 id="unlockTitle">Nền Pro</h2>
+      <p id="unlockText">Nền này thuộc gói Pro. Liên hệ ManhTool để mở khóa.</p>
+      <p class="unlock-account" id="unlockAccount" hidden></p>
+      <div class="unlock-login" id="unlockLogin" hidden>
+        <p>Đã mua gói Pro? Đăng nhập để mở khóa trên mọi thiết bị.</p>
+        <button class="btn-ghost btn-google" type="button" id="unlockLoginBtn"><svg class="ic"><use href="#i-google"/></svg><span>Đăng nhập bằng Google</span></button>
+      </div>
+      <div class="unlock-actions">
+        <a class="btn-primary" href="https://zalo.me/0988392321" target="_blank" rel="noopener"><svg class="ic"><use href="#i-chat"/></svg><span>Nhắn Zalo để mở khóa</span></a>
+        <a class="btn-ghost" href="tel:0988392321"><svg class="ic"><use href="#i-phone"/></svg><span>Gọi</span></a>
+        <button class="btn-ghost" type="button" id="unlockClose">Để sau</button>
+      </div>
+    </div>
+  </dialog>
+
+  <!-- Hộp mua nền: chọn gói → quét QR → mở khóa -->
+  <dialog id="shopDialog" class="shop-dialog" aria-labelledby="shopTitle">
+    <button class="icon-btn shop-close" type="button" id="shopClose" aria-label="Đóng"><svg class="ic"><use href="#i-x"/></svg></button>
+
+    <!-- Bước 1: chọn gói -->
+    <section class="shop-view" data-view="choose">
+      <div class="tile-art shop-art" id="shopArt"><span class="fx"></span><span class="tile-time">25:00</span></div>
+      <div class="shop-body">
+        <h2 id="shopTitle">Mở khóa nền Pro</h2>
+        <p class="shop-lead" id="shopLead"></p>
+        <div class="shop-options" id="shopOptions" role="radiogroup" aria-label="Chọn gói"></div>
+        <p class="shop-error" id="shopError" hidden></p>
+        <button class="btn-primary shop-cta" type="button" id="shopBuy"></button>
+        <p class="shop-foot">Thanh toán bằng chuyển khoản ngân hàng (mọi app ngân hàng, ví điện tử có quét VietQR). Mở khóa ngay khi tiền về, dùng trên mọi thiết bị đã đăng nhập.</p>
+      </div>
+    </section>
+
+    <!-- Bước 2: quét QR -->
+    <section class="shop-view" data-view="pay" hidden>
+      <div class="shop-body">
+        <h2>Quét mã để thanh toán</h2>
+        <p class="shop-lead" id="payTitle"></p>
+        <div class="pay-grid">
+          <div class="pay-qr">
+            <img id="payQr" alt="Mã VietQR thanh toán" width="240" height="240" referrerpolicy="no-referrer">
+            <span class="pay-timer" id="payTimer"></span>
+          </div>
+          <dl class="pay-info">
+            <dt>Ngân hàng</dt><dd id="payBank"></dd>
+            <dt>Số tài khoản</dt><dd><b id="payAcc"></b><button class="copy-mini" type="button" data-copy-from="payAcc" aria-label="Chép số tài khoản"><svg class="ic"><use href="#i-copy"/></svg></button></dd>
+            <dt>Chủ tài khoản</dt><dd id="payName"></dd>
+            <dt>Số tiền</dt><dd><b id="payAmount"></b><button class="copy-mini" type="button" data-copy-from="payAmountRaw" aria-label="Chép số tiền"><svg class="ic"><use href="#i-copy"/></svg></button><span id="payAmountRaw" hidden></span></dd>
+            <dt>Nội dung</dt><dd class="pay-code"><b id="payCode"></b><button class="copy-mini" type="button" data-copy-from="payCode" aria-label="Chép nội dung chuyển khoản"><svg class="ic"><use href="#i-copy"/></svg></button></dd>
+          </dl>
+        </div>
+        <p class="pay-warn">Ghi <b>đúng nội dung</b> như trên để hệ thống tự nhận ra đơn của bạn.</p>
+        <p class="pay-status" id="payStatus"><span class="spinner" aria-hidden="true"></span><span>Đang chờ tiền về… trang tự mở khóa khi nhận được, không cần làm gì thêm.</span></p>
+        <div class="shop-actions">
+          <button class="btn-ghost" type="button" id="payBack">Đổi gói</button>
+          <button class="btn-ghost" type="button" id="payCancel">Hủy đơn</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Bước 3: xong -->
+    <section class="shop-view shop-done" data-view="done" hidden>
+      <div class="done-badge"><svg class="ic"><use href="#i-check"/></svg></div>
+      <h2 id="doneShopTitle">Đã mở khóa!</h2>
+      <p class="shop-lead" id="doneShopText">Cảm ơn bạn đã ủng hộ ManhTool.</p>
+      <button class="btn-primary shop-cta" type="button" id="shopUse">Dùng nền ngay</button>
+    </section>
+  </dialog>
+
+  <!-- Hộp tài khoản -->
+  <dialog id="accountDialog" class="account-dialog" aria-labelledby="accName">
+    <div class="acc-head">
+      <img id="accAvatar" class="acc-avatar" alt="" width="56" height="56" referrerpolicy="no-referrer">
+      <div class="acc-id">
+        <div class="acc-name-row" id="accNameRow">
+          <h2 id="accName"></h2>
+          <button class="icon-btn acc-edit" type="button" id="accEditName" title="Đổi tên hiển thị" aria-label="Đổi tên hiển thị"><svg class="ic"><use href="#i-pencil"/></svg></button>
+        </div>
+        <form class="acc-rename" id="accRename" hidden>
+          <input id="accNameInput" type="text" maxlength="100" aria-label="Tên hiển thị">
+          <button class="btn-primary" type="submit">Lưu</button>
+          <button class="btn-ghost" type="button" id="accRenameCancel">Hủy</button>
+        </form>
+        <p id="accEmail"></p>
+      </div>
+      <button class="icon-btn" type="button" id="accClose" aria-label="Đóng"><svg class="ic"><use href="#i-x"/></svg></button>
+    </div>
+    <div class="acc-badges" id="accBadges"></div>
+
+    <section class="acc-box">
+      <span class="acc-sync-dot" id="accSyncDot" aria-hidden="true"></span>
+      <div>
+        <b>Đồng bộ dữ liệu</b>
+        <p id="accSyncText"></p>
+      </div>
+      <button class="btn-ghost" type="button" id="accSyncNow"><svg class="ic"><use href="#i-sync"/></svg><span>Đồng bộ ngay</span></button>
+    </section>
+    <p class="acc-note">Danh sách việc, chuỗi bước, mục đã lưu, tùy chọn và thống kê được lưu theo tài khoản, mở trên máy khác vẫn còn. Ảnh nền riêng và đồng hồ đang chạy chỉ ở máy này.</p>
+
+    <div class="acc-links">
+      <a class="btn-ghost" id="accAdmin" href="/admin" hidden><svg class="ic"><use href="#i-shield"/></svg><span>Trang quản trị</span></a>
+      <a class="btn-ghost" id="accExport" href="/api/me/export" download><svg class="ic"><use href="#i-install"/></svg><span>Tải dữ liệu (.json)</span></a>
+      <button class="btn-ghost" type="button" id="accUpgrade" hidden><svg class="ic"><use href="#i-sparkles"/></svg><span>Nâng cấp Pro</span></button>
+      <button class="btn-ghost" type="button" id="accRestore" hidden><svg class="ic"><use href="#i-restore"/></svg><span>Khôi phục bản trước khi đồng bộ</span></button>
+    </div>
+
+    <div class="acc-logout">
+      <label class="opt"><input type="checkbox" id="accWipe"><span class="switch" aria-hidden="true"></span>Xóa dữ liệu trên máy này khi đăng xuất (máy dùng chung)</label>
+      <div class="acc-links">
+        <button class="btn-primary" type="button" id="accLogout"><svg class="ic"><use href="#i-logout"/></svg><span>Đăng xuất</span></button>
+        <button class="btn-ghost" type="button" id="accLogoutAll">Đăng xuất mọi thiết bị</button>
+      </div>
+    </div>
+
+    <details class="acc-danger">
+      <summary>Xóa tài khoản</summary>
+      <p>Tài khoản và dữ liệu đồng bộ trên máy chủ sẽ bị xóa vĩnh viễn, không khôi phục được. Dữ liệu trên máy này vẫn giữ nguyên.</p>
+      <label class="acc-confirm"><input type="checkbox" id="accDelConfirm"> Tôi hiểu và muốn xóa tài khoản</label>
+      <button class="btn-danger" type="button" id="accDelete" disabled>Xóa vĩnh viễn</button>
+    </details>
+  </dialog>
+
+  <!-- Hộp báo hết giờ -->
+  <dialog id="doneDialog" class="done-dialog" aria-labelledby="doneTitle">
+    <div class="done-head">
+      <span class="done-icon"><svg class="ic"><use href="#i-alarm"/></svg></span>
+      <div>
+        <h2 id="doneTitle">Hết giờ!</h2>
+        <p id="doneSub">Đã đủ 45 phút</p>
+      </div>
+      <button class="icon-btn" type="button" id="btnMute" title="Tắt chuông" aria-label="Tắt chuông"><svg class="ic"><use href="#i-volume"/></svg></button>
+    </div>
+    <div id="doneBody"></div>
+    <div class="done-actions">
+      <button class="btn-primary" type="button" id="btnAgain"><svg class="ic"><use href="#i-reset"/></svg><span>Đếm lại 45 phút</span></button>
+      <button class="btn-ghost" type="button" id="btnSnooze"><svg class="ic"><use href="#i-clock"/></svg><span>Báo lại sau 5 phút</span></button>
+      <button class="btn-ghost" type="button" id="btnClose">Đóng</button>
+    </div>
+  </dialog>
+
+  <dialog id="qrDialog" class="qr-dialog" aria-label="Mã QR ủng hộ">
+    <form method="dialog"><button class="icon-btn qr-close" aria-label="Đóng"><svg class="ic"><use href="#i-x"/></svg></button></form>
+    <h2>Ủng hộ ManhTool</h2>
+    <img src="assets/img/donate-qr.png" alt="Mã QR chuyển khoản Techcombank" width="400" height="486">
+    <p>Cảm ơn bạn đã ủng hộ!</p>
+  </dialog>
+
+  <input type="file" id="photoInput" accept="image/*" hidden>
+
+  <!-- Đọc cho trình đọc màn hình: còn mấy phút, sang bước, hết giờ -->
+  <div class="visually-hidden" id="srLive" aria-live="assertive" aria-atomic="true"></div>
+  <div class="toast" id="toast" role="status" aria-live="polite"><span id="toastMsg"></span><button type="button" id="toastAction" hidden></button></div>
+
+  <script src="assets/js/timer-core.js" defer></script>
+  <script src="assets/js/themes.js" defer></script>
+  <script src="assets/js/sounds.js" defer></script>
+  <script src="assets/js/pip.js" defer></script>
+  <script src="assets/js/app.js" defer></script>
+  <script src="assets/js/api.js" defer></script>
+  <script src="assets/js/account.js" defer></script>
+  <script src="assets/js/shop.js" defer></script>
+</body>
+</html>

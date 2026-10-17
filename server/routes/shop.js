@@ -3,12 +3,18 @@
 const crypto = require('node:crypto');
 const { json, readBody, clientIp } = require('../lib/http');
 
-// So khóa webhook theo thời gian không đổi. Chấp nhận "Apikey KEY" (kiểu SePay) hoặc "Bearer KEY".
+// So khóa webhook theo thời gian không đổi. Chấp nhận "Apikey KEY" (kiểu SePay), "Bearer KEY" hoặc header x-api-key.
 function webhookKeyOk(req, key) {
-  const h = String(req.headers.authorization || '');
-  const m = /^(?:Apikey|Bearer)\s+(.+)$/i.exec(h.trim());
-  if (!m || !key) return false;
-  const a = crypto.createHash('sha256').update(m[1].trim()).digest();
+  if (!key) return false;
+  const h = String(req.headers.authorization || '').trim();
+  const x = String(req.headers['x-api-key'] || '').trim();
+  let token = x;
+  if (!token) {
+    const m = /^(?:Apikey|Bearer)\s+(.+)$/i.exec(h);
+    token = m ? m[1].trim() : (h === key ? h : '');
+  }
+  if (!token) return false;
+  const a = crypto.createHash('sha256').update(token).digest();
   const b = crypto.createHash('sha256').update(key).digest();
   return crypto.timingSafeEqual(a, b);
 }

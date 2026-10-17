@@ -16,6 +16,26 @@ const PAY_WINDOW_MS = 30 * 60000;          // QR hiển thị 30 phút
 const LATE_ACCEPT_MS = 7 * 86400000;        // chuyển muộn trong 7 ngày vẫn được ghi nhận
 const MAX_PENDING_PER_USER = 3;
 
+const BANK_ALIASES = {
+  'MBB': 'MB',
+  'MBBANK': 'MB',
+  'TECHCOMBANK': 'TCB',
+  'VIETCOMBANK': 'VCB',
+  'VIETINBANK': 'ICB',
+  'VTB': 'ICB',
+  'VPBANK': 'VPB',
+  'TPBANK': 'TPB',
+  'SACOMBANK': 'STB',
+  'HDBANK': 'HDB',
+  'AGRIBANK': 'VBA',
+  'AGRI': 'VBA'
+};
+
+function cleanBankId(id) {
+  const k = String(id || '').trim().toUpperCase();
+  return BANK_ALIASES[k] || k;
+}
+
 function makeCode() {
   const bytes = crypto.randomBytes(6);
   let s = '';
@@ -84,9 +104,10 @@ function createPaymentService({ config, db, users, now }) {
 
   function instructions(o) {
     const s = settings();
-    const qr = 'https://img.vietqr.io/image/' + encodeURIComponent(s.bankId) + '-' + encodeURIComponent(s.accountNo) + '-compact2.png?' +
+    const bank = cleanBankId(s.bankId);
+    const qr = 'https://img.vietqr.io/image/' + encodeURIComponent(bank) + '-' + encodeURIComponent(s.accountNo) + '-compact2.png?' +
       new URLSearchParams({ amount: String(o.amount), addInfo: o.code, accountName: s.accountName }).toString();
-    return { bankId: s.bankId, accountNo: s.accountNo, accountName: s.accountName, amount: o.amount, content: o.code, qrUrl: qr };
+    return { bankId: bank, accountNo: s.accountNo, accountName: s.accountName, amount: o.amount, content: o.code, qrUrl: qr };
   }
 
   function toPublic(o, withPay) {

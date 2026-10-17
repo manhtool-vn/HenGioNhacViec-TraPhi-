@@ -1871,7 +1871,7 @@
       return;
     }
     writeClipboard(url).then(
-      function () { toast('Đã chép liên kết. Ai mở sẽ thấy đúng cài đặt này'); },
+      function () { toast('Đã chép liên kết. Ai mở sẽ thấy đúng cài đặt này'); if (window.nudge) window.nudge.afterCopy(); },
       function () { window.prompt('Chép liên kết này:', url); });
   });
 
@@ -2012,7 +2012,7 @@
     b.addEventListener('click', function () {
       var text = b.dataset.copy;
       writeClipboard(text).then(
-        function () { toast('Đã chép số ' + text); },
+        function () { toast('Đã chép số ' + text); if (window.nudge) window.nudge.afterCopy(); },
         function () { toast('Không sao chép được, số là ' + text); });
     });
   });
@@ -2256,4 +2256,55 @@
   var toured = false;
   try { toured = localStorage.getItem('mt-hg-tour') === '1'; } catch (e) {}
   if (!toured && !isActive() && !OPENED_FROM_SHARE) setTimeout(function () { startTour(0); }, 900);
+
+  /* ---------- Lời mời tư vấn ---------- */
+  var nudge = (function () {
+    var KEY = 'mt-nudge-dismissed';
+    var el = $('nudge');
+    if (!el) return { afterCopy: function () {} };
+    var wanted = false, suppressed = false, timer;
+
+    function dismissed() {
+      try { return !!sessionStorage.getItem(KEY); } catch (e) { return false; }
+    }
+    function sync() { el.hidden = !wanted || suppressed || dismissed(); }
+    function want() {
+      if (wanted || dismissed()) return;
+      wanted = true;
+      sync();
+    }
+    function dismiss() {
+      wanted = false;
+      clearTimeout(timer);
+      try { sessionStorage.setItem(KEY, '1'); } catch (e) {}
+      sync();
+    }
+
+    if (!dismissed()) {
+      timer = setTimeout(want, 25000);
+      if ('IntersectionObserver' in window) {
+        var guide = document.querySelector('.guide, .about, .faq, .seo-tips, .quick-tips, .brand-card');
+        if (guide) {
+          var io = new IntersectionObserver(function (en) {
+            if (en[0].isIntersecting) { want(); io.disconnect(); }
+          });
+          io.observe(guide);
+        }
+        var seen = new Set();
+        var hideIo = new IntersectionObserver(function (entries) {
+          entries.forEach(function (e) { if (e.isIntersecting) seen.add(e.target); else seen.delete(e.target); });
+          suppressed = seen.size > 0;
+          sync();
+        });
+        document.querySelectorAll('.brand-section, .site-footer').forEach(function (t) { hideIo.observe(t); });
+      }
+    }
+
+    var btnClose = $('nudgeClose');
+    if (btnClose) btnClose.addEventListener('click', dismiss);
+    var btnGo = $('nudgeGo');
+    if (btnGo) btnGo.addEventListener('click', dismiss);
+    return { afterCopy: function () { setTimeout(want, 1500); } };
+  })();
+  window.nudge = nudge;
 })();

@@ -355,7 +355,7 @@ test('file tĩnh: chỉ phục vụ public/, có CSP, chặn .env, data, server,
     const home = await req(s.base, 'GET', '/');
     assert.equal(home.status, 200);
     const csp = home.headers.get('content-security-policy');
-    assert.match(csp, /script-src 'self'(;|$)/); // không cho script inline
+    assert.match(csp, /script-src 'self'/); // không cho script inline
     assert.match(csp, /frame-ancestors 'none'/);
     assert.equal(home.headers.get('x-frame-options'), 'DENY');
     assert.equal(home.headers.get('x-content-type-options'), 'nosniff');

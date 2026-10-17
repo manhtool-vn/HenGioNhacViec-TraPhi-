@@ -745,3 +745,44 @@ kbd {
   .brand-logo { width: 120px; height: 120px; }
   .hire-actions .btn-ghost-light { flex: 1 1 auto; }
 }
+
+/* ---------- Lời mời tư vấn (giống trang chủ) ---------- */
+.nudge {
+  position: fixed; left: 20px; bottom: 24px; z-index: 30; width: 320px; padding: 20px;
+  background: var(--surface); color: var(--text); border: 1px solid var(--border); border-radius: 18px;
+  box-shadow: 0 20px 50px -12px rgba(15,38,32,.28), 0 2px 6px rgba(15,38,32,.06);
+  animation: nudge-in .35s ease-out;
+}
+.nudge[hidden] { display: none; }
+@keyframes nudge-in { from { opacity: 0; transform: translateY(12px); } }
+.nudge-close {
+  position: absolute; top: 10px; right: 10px; display: grid; place-items: center; width: 30px; height: 30px; padding: 0;
+  background: none; border: 0; border-radius: 8px; color: var(--text-3); cursor: pointer;
+}
+.nudge-close:hover { background: var(--surface-2); color: var(--text); }
+.nudge-close .ic { width: 16px; height: 16px; }
+.nudge-head { display: flex; align-items: center; gap: 12px; padding-right: 24px; }
+.nudge-head img { width: 50px; height: 30px; object-fit: contain; flex: none; }
+.nudge-head p { font-size: .95rem; font-weight: 700; line-height: 1.35; margin: 0; }
+.nudge-text { margin-top: 8px; font-size: .88rem; line-height: 1.55; color: var(--text-2); margin-bottom: 0; }
+.nudge-actions { display: flex; gap: 8px; margin-top: 16px; }
+.nudge-actions .btn-primary {
+  flex: 1; height: 42px; padding: 0 12px;
+  background: linear-gradient(135deg, var(--brand-700), var(--brand-500));
+  border-radius: 10px; color: #fff; font-weight: 600; font-size: .88rem;
+  display: inline-flex; align-items: center; justify-content: center; text-decoration: none; border: none;
+}
+.nudge-actions .btn-primary:hover { background: linear-gradient(135deg, var(--brand-800), var(--brand-700)); }
+:root[data-theme="dark"] .nudge-actions .btn-primary { color: #fff; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .nudge-actions .btn-primary { color: #fff; } }
+.nudge-actions .btn-ghost {
+  height: 42px; padding: 0 14px; border-radius: 10px;
+  border: 1px solid var(--border); color: var(--text);
+  font-weight: 600; font-size: .88rem; display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+  text-decoration: none; background: transparent;
+}
+.nudge-actions .btn-ghost:hover { background: var(--surface-2); }
+.nudge-actions .btn-ghost .ic { width: 16px; height: 16px; }
+@media (max-width: 1023px) { .nudge { display: none !important; } }
+@media (prefers-reduced-motion: reduce) { .nudge { animation: none; } }
+

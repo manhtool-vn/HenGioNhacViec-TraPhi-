@@ -23,6 +23,7 @@
   <link rel="stylesheet" href="assets/css/stage.css">
   <link rel="stylesheet" href="assets/css/account.css">
   <script src="assets/js/boot.js"></script>
+  <script src="assets/js/gtag.js" defer></script>
 </head>
 <body>
   <!-- Bộ icon dùng chung (nét 2px, bo tròn) -->
@@ -670,6 +671,20 @@
 
   <!-- Đọc cho trình đọc màn hình: còn mấy phút, sang bước, hết giờ -->
   <div class="visually-hidden" id="srLive" aria-live="assertive" aria-atomic="true"></div>
+
+  <aside class="nudge" id="nudge" aria-label="Lời mời hợp tác" hidden>
+    <button class="nudge-close" id="nudgeClose" type="button" aria-label="Đóng"><svg class="ic"><use href="#i-x"/></svg></button>
+    <div class="nudge-head">
+      <img src="assets/img/logo-mark-96.png" alt="ManhTool" width="50" height="30">
+      <p>Cần giải pháp công nghệ hoặc công cụ riêng cho doanh nghiệp?</p>
+    </div>
+    <p class="nudge-text">Đội ngũ Mạnh Nguyễn sẵn sàng tư vấn, thiết kế website và phát triển phần mềm theo nhu cầu của bạn.</p>
+    <div class="nudge-actions">
+      <a class="btn-primary" id="nudgeGo" href="tel:0988392321">Tư vấn ngay</a>
+      <a class="btn-ghost" href="https://zalo.me/0988392321" target="_blank" rel="noopener"><svg class="ic"><use href="#i-chat"/></svg>Zalo</a>
+    </div>
+  </aside>
+
   <div class="toast" id="toast" role="status" aria-live="polite"><span id="toastMsg"></span><button type="button" id="toastAction" hidden></button></div>
 
   <script src="assets/js/timer-core.js" defer></script>

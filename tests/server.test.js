@@ -385,3 +385,79 @@ test('nâng cấp dữ liệu cũ (phiên cookie) sang JWT', () => {
   assert.equal(db.data.settings.lockPremium, true);
   assert.equal(db.data.settings.registrationOpen, true);
 });
+
+/* ---------- Thư viện nhạc ---------- */
+test('thư viện nhạc: chỉ admin tải lên, kiểm tra định dạng + giấy phép, phát có Range, khóa bài Pro', async () => {
+  const dataDir = fs.mkdtempSync(path.join(os.tmpdir(), 'hengio-music-'));
+  const { server, base, db } = await startServer({ DATA_DIR: dataDir });
+  try {
+    const admin = (await login(base, 'a')).jar;   // người đầu tiên là quản trị
+    const user = (await login(base, 'b')).jar;
+    const mp3 = Buffer.concat([Buffer.from('ID3'), Buffer.alloc(997, 7)]);
+    const upload = (jar, meta, body, extra = {}) => fetch(base + '/api/admin/music?meta=' + encodeURIComponent(JSON.stringify(meta)), {
+      method: 'POST', body, headers: Object.assign({ Cookie: cookieHeader(jar), 'X-Requested-With': 'hengio', 'Content-Type': 'application/octet-stream' }, extra)
+    }).then(async (r) => ({ status: r.status, data: await r.json() }));
+    const meta = { title: 'Morning <b>Focus</b>', artist: 'Kevin', license: 'CC BY 4.0', source: 'https://example.com/track', tier: 'free', confirm: true };
+
+    assert.equal((await upload(user, meta, mp3)).status, 403);
+    assert.equal((await upload(admin, Object.assign({}, meta, { confirm: false }), mp3)).status, 400);
+    assert.equal((await upload(admin, Object.assign({}, meta, { source: '' }), mp3)).status, 400, 'CC BY cần nguồn');
+    assert.equal((await upload(admin, Object.assign({}, meta, { license: 'Tải trên mạng' }), mp3)).status, 400);
+    assert.equal((await upload(admin, meta, Buffer.from('<html>not audio</html>'))).status, 415);
+    // Không có header chống CSRF → bị chặn
+    const noCsrf = await fetch(base + '/api/admin/music?meta={}', { method: 'POST', body: mp3, headers: { Cookie: cookieHeader(admin) } });
+    assert.equal(noCsrf.status, 403);
+
+    const ok = await upload(admin, meta, mp3);
+    assert.equal(ok.status, 200);
+    const id = ok.data.track.id;
+    assert.equal(ok.data.track.mime, 'audio/mpeg');
+    assert.ok(fs.existsSync(path.join(dataDir, 'music', id + '.mp3')), 'file nằm trong data/music');
+
+    // Danh sách công khai: không lộ thông tin quản trị
+    const pub = await req(base, 'GET', '/api/music');
+    assert.equal(pub.data.tracks.length, 1);
+    assert.equal(pub.data.tracks[0].artist, 'Kevin');
+    assert.equal(pub.data.tracks[0].by, undefined);
+
+    // Phát: cả file và từng đoạn (Range) để tua / lặp
+    const full = await fetch(base + '/api/music/' + id + '/file');
+    assert.equal(full.status, 200);
+    assert.equal(full.headers.get('content-type'), 'audio/mpeg');
+    assert.equal(full.headers.get('accept-ranges'), 'bytes');
+    assert.equal((await full.arrayBuffer()).byteLength, 1000);
+    const part = await fetch(base + '/api/music/' + id + '/file', { headers: { Range: 'bytes=0-2' } });
+    assert.equal(part.status, 206);
+    assert.equal(part.headers.get('content-range'), 'bytes 0-2/1000');
+    assert.equal(Buffer.from(await part.arrayBuffer()).toString(), 'ID3');
+    assert.equal((await fetch(base + '/api/music/' + id + '/file', { headers: { Range: 'bytes=5000-' } })).status, 416);
+
+    // Bài Pro: khi đang bán nền thì người chưa mua không phát được
+    db.data.settings.lockPremium = true;
+    assert.equal((await req(base, 'PATCH', '/api/admin/music/' + id, { jar: admin, body: { tier: 'pro' } })).status, 200);
+    assert.equal((await fetch(base + '/api/music/' + id + '/file')).status, 403);
+    assert.equal((await req(base, 'GET', '/api/music', { jar: user })).data.tracks[0].locked, true);
+    assert.equal((await fetch(base + '/api/music/' + id + '/file', { headers: { Cookie: cookieHeader(admin) } })).status, 200);
+
+    // Ẩn bài → biến khỏi danh sách công khai; xóa → mất cả file
+    await req(base, 'PATCH', '/api/admin/music/' + id, { jar: admin, body: { active: false } });
+    assert.equal((await req(base, 'GET', '/api/music')).data.tracks.length, 0);
+    assert.equal((await req(base, 'DELETE', '/api/admin/music/' + id, { jar: user })).status, 403);
+    assert.equal((await req(base, 'DELETE', '/api/admin/music/' + id, { jar: admin })).status, 200);
+    assert.ok(!fs.existsSync(path.join(dataDir, 'music', id + '.mp3')));
+    assert.ok(db.data.audit.some((a) => /Thêm nhạc/.test(a.action || a.what || JSON.stringify(a))));
+  } finally { server.close(); }
+});
+
+test('nhận diện định dạng nhạc bằng byte đầu file', () => {
+  const { sniffAudio } = require('../server/services/music');
+  const pad = (s) => Buffer.concat([Buffer.from(s, 'latin1'), Buffer.alloc(16)]);
+  assert.equal(sniffAudio(pad('ID3')).ext, 'mp3');
+  assert.equal(sniffAudio(Buffer.from([0xff, 0xfb, 0x90, 0, 0, 0, 0, 0, 0, 0, 0, 0])).ext, 'mp3');
+  assert.equal(sniffAudio(pad('OggS')).ext, 'ogg');
+  assert.equal(sniffAudio(pad('RIFF\0\0\0\0WAVE')).ext, 'wav');
+  assert.equal(sniffAudio(pad('\0\0\0\x20ftypM4A ')).ext, 'm4a');
+  assert.equal(sniffAudio(pad('fLaC')).ext, 'flac');
+  assert.equal(sniffAudio(pad('<html>')), null);
+  assert.equal(sniffAudio(pad('MZ')), null);
+});

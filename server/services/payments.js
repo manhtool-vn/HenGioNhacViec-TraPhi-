@@ -39,7 +39,7 @@ function createPaymentService({ config, db, users, now }) {
   function catalog() {
     const s = settings();
     return {
-      pro: { id: 'pro', name: 'Gói Pro trọn đời', price: s.pricePro, note: 'Mở khóa tất cả nền Pro hiện có và các nền ra mắt sau này, kể cả nền ảnh của bạn' },
+      pro: { id: 'pro', name: 'Gói Pro trọn đời', price: s.pricePro, note: 'Mở khóa tất cả nền Pro hiện có và các nền ra mắt sau này, kể cả nền ảnh của bạn và nhạc nền Pro' },
       season: { id: 'season', name: 'Gói Lễ, Tết cả năm', price: s.priceSeason, note: 'Tất cả ' + seasonThemes().length + ' nền ngày lễ trong năm', themes: seasonThemes().map((t) => t.id) },
       theme: { price: s.priceTheme }
     };

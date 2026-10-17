@@ -343,6 +343,19 @@
     }
   ];
 
+  /* Nhạc nền gợi ý cho từng nền (id trong assets/js/soundscapes.js).
+     Người dùng chọn "Nhạc: Theo nền" thì đổi nền là đổi nhạc theo. */
+  var MUSIC = {
+    forest: 'ambient', light: 'pink', midnight: 'ambient', paper: 'bach', graphite: 'brown', pastel: 'musicbox', coffee: 'lofi',
+    sunset: 'lofi', aurora: 'ambient', ocean: 'waves', neon: 'lofi', starry: 'gymnopedie', sakura: 'musicbox', chalk: 'brown',
+    terminal: 'brown', rain: 'rain', snow: 'wind', synthwave: 'lofi', bokeh: 'lofi', lofi: 'lofi', scoreboard: 'brown',
+    tet: 'dantranh', trungthu: 'dantranh', christmas: 'musicbox', newyear: 'odetojoy', valentine: 'canon', thaythuoc: 'pink',
+    women83: 'musicbox', hungvuong: 'dantranh', earthday: 'wind', reunification: 'dantranh', thieunhi: 'musicbox',
+    graduation: 'odetojoy', vulan: 'dantranh', quockhanh: 'dantranh', khaigiang: 'musicbox', women2010: 'musicbox',
+    halloween: 'wind', nhagiao: 'dantranh', birthday: 'musicbox', photo: 'ambient'
+  };
+  THEMES.forEach(function (t) { t.music = MUSIC[t.id] || 'brown'; });
+
   var DEFAULT_VARS = {
     bg: '#000', bgSize: 'auto', text: '#fff', sub: 'rgba(255,255,255,.6)', accent: '#12b886', accent2: '#12b886',
     track: 'rgba(255,255,255,.1)', glow: 'none', warn: '#ffb347'

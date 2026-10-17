@@ -7,7 +7,7 @@
   },
   "scripts": {
     "start": "node server/index.js",
-    "test": "node --test tests/timer-core.test.js tests/themes.test.js tests/server.test.js tests/payments.test.js && node scripts/check-syntax.js",
+    "test": "node --test tests/timer-core.test.js tests/themes.test.js tests/server.test.js tests/payments.test.js tests/music.test.js && node scripts/check-syntax.js",
     "check": "node scripts/check-syntax.js"
   }
 }

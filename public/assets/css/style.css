@@ -351,8 +351,8 @@ h1, h2, h3, p { margin: 0; }
 /* ---------- Bổ sung: thống kê, toàn màn hình, tùy chọn ---------- */
 .main-col { display: flex; flex-direction: column; gap: 20px; min-width: 0; }
 
-.timer-top { display: flex; align-items: center; justify-content: space-between; gap: 10px; width: 100%; }
-.today { display: inline-flex; align-items: center; gap: 6px; font-size: .8rem; color: var(--text-3); min-width: 0; }
+.timer-top { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px 10px; width: 100%; }
+.today { display: inline-flex; align-items: center; gap: 6px; font-size: .8rem; color: var(--text-3); min-width: 0; white-space: nowrap; }
 .today .ic { width: 15px; height: 15px; flex: none; }
 .today b { color: var(--text-2); font-weight: 700; }
 .ctl-fs { gap: 6px; padding: 0 12px; }
@@ -391,7 +391,7 @@ h1, h2, h3, p { margin: 0; }
 .theme-note[hidden] { display: none; }
 @media (max-width: 559px) { .theme-head .btn-primary { width: 100%; } }
 
-.timer-top-actions { display: flex; gap: 6px; }
+.timer-top-actions { display: flex; gap: 6px; margin-left: auto; }
 .ctl[hidden] { display: none; }
 .header-link[hidden] { display: none; }
 .header-install { border: 0; background: var(--tint); color: var(--accent-text); cursor: pointer; font-family: inherit; }
@@ -786,3 +786,12 @@ kbd {
 @media (max-width: 1023px) { .nudge { display: none !important; } }
 @media (prefers-reduced-motion: reduce) { .nudge { animation: none; } }
 
+
+/* ---------- Nhạc nền ---------- */
+.opt-group-wide { grid-column: 1 / -1; }
+.opt-group[hidden] { display: none; }
+.music-select { max-width: 100%; min-width: 0; flex: 1 1 220px; }
+.opt-note { flex-basis: 100%; font-size: .78rem; color: var(--text-3); }
+.music-now { flex-basis: 100%; margin: 0; font-size: .82rem; color: var(--text-2); overflow-wrap: anywhere; }
+.music-now b { color: var(--text); font-weight: 600; }
+.music-now a { color: var(--brand-700); }

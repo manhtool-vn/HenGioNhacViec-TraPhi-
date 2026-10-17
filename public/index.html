@@ -39,6 +39,8 @@
     <symbol id="i-list" viewBox="0 0 24 24"><path d="m3 17 2 2 4-4M3 7l2 2 4-4M13 6h8M13 12h8M13 18h8"/></symbol>
     <symbol id="i-shuffle" viewBox="0 0 24 24"><path d="M16 3h5v5M4 20 21 3M21 16v5h-5M15 15l6 6M4 4l5 5"/></symbol>
     <symbol id="i-volume" viewBox="0 0 24 24"><path d="M11 5 6 9H2v6h4l5 4V5z"/><path d="M15.5 8.5a5 5 0 0 1 0 7M19 5a10 10 0 0 1 0 14"/></symbol>
+    <symbol id="i-music" viewBox="0 0 24 24"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></symbol>
+    <symbol id="i-music-off" viewBox="0 0 24 24"><path d="M9 18V9M9 5l12-2v9"/><circle cx="6" cy="18" r="3"/><path d="m2 2 20 20"/></symbol>
     <symbol id="i-bell" viewBox="0 0 24 24"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></symbol>
     <symbol id="i-phone-screen" viewBox="0 0 24 24"><rect x="5" y="2" width="14" height="20" rx="2"/><path d="M12 18h.01"/></symbol>
     <symbol id="i-alarm" viewBox="0 0 24 24"><circle cx="12" cy="13" r="8"/><path d="M12 9v4l2 2M5 3 2 6M22 6l-3-3M6.4 18.6 4 21M17.6 18.6 20 21"/></symbol>
@@ -150,14 +152,17 @@
               <button type="button" role="radio" data-mode="single"><svg class="ic"><use href="#i-clock"/></svg>Đếm 1 lần</button>
               <button type="button" role="radio" data-mode="plan"><svg class="ic"><use href="#i-layers"/></svg>Chuỗi nhiều bước</button>
             </div>
-            <div class="dial">
-              <svg class="ring" viewBox="0 0 220 220" aria-hidden="true">
-                <circle class="ring-track" cx="110" cy="110" r="100"/>
-                <circle class="ring-bar" id="ringBar" cx="110" cy="110" r="100"/>
-              </svg>
-              <div class="dial-center">
-                <span class="time" id="timeText" role="timer" aria-label="Thời gian còn lại">45:00</span>
-                <span class="time-sub" id="timeSub">45 phút</span>
+            <div class="dial-screen" id="dialScreen">
+              <span class="fx" id="dialFx" aria-hidden="true"></span>
+              <div class="dial">
+                <svg class="ring" viewBox="0 0 220 220" aria-hidden="true">
+                  <circle class="ring-track" cx="110" cy="110" r="100"/>
+                  <circle class="ring-bar" id="ringBar" cx="110" cy="110" r="100"/>
+                </svg>
+                <div class="dial-center">
+                  <span class="time" id="timeText" role="timer" aria-label="Thời gian còn lại">45:00</span>
+                  <span class="time-sub" id="timeSub">45 phút</span>
+                </div>
               </div>
             </div>
 
@@ -279,6 +284,21 @@
               <svg class="ic"><use href="#i-phone-screen"/></svg>Giữ màn hình sáng
             </label>
           </div>
+          <div class="opt-group opt-group-wide music-group" role="group" aria-label="Nhạc nền">
+            <span class="opt-title">Nhạc nền</span>
+            <label class="opt">
+              <input type="checkbox" id="optMusic"><span class="switch" aria-hidden="true"></span>
+              <svg class="ic"><use href="#i-music"/></svg>Bật nhạc nền
+            </label>
+            <select class="select music-select" data-music-src aria-label="Chọn nhạc nền"></select>
+            <label class="vol" title="Âm lượng nhạc nền"><svg class="ic"><use href="#i-volume"/></svg><input type="range" data-music-vol min="0" max="100" step="5" aria-label="Âm lượng nhạc nền"></label>
+            <button class="link-btn" type="button" id="btnMusicTry">Nghe thử</button>
+            <label class="opt">
+              <input type="checkbox" id="optMusicRun"><span class="switch" aria-hidden="true"></span>Chỉ phát khi đang đếm
+            </label>
+            <p class="music-now" data-music-now hidden></p>
+            <p class="opt-note">Nhạc tạo bằng máy và các bản cổ điển (piano do ManhTool tự chơi lại tác phẩm đã hết bản quyền) dùng thoải mái, kể cả ở lớp học, quán cà phê hay livestream. Bài trong Thư viện ManhTool có giấy phép riêng, ghi ở dòng Đang phát.</p>
+          </div>
         </div>
       </section>
 
@@ -306,8 +326,8 @@
       <section class="card theme-card" aria-labelledby="themeTitle">
         <div class="theme-head">
           <div>
-            <h2 id="themeTitle">Giao diện toàn màn hình</h2>
-            <p>Chọn nền rồi mở toàn màn hình để treo lên màn hình phụ, TV hay máy chiếu trong lớp học, phòng họp.</p>
+            <h2 id="themeTitle">Giao diện đồng hồ</h2>
+            <p>Nền chọn ở đây dùng cho đồng hồ trên trang và khi mở toàn màn hình để treo lên màn hình phụ, TV hay máy chiếu.</p>
           </div>
           <button class="btn-primary" type="button" id="btnStage2"><svg class="ic"><use href="#i-maximize"/></svg><span>Mở toàn màn hình</span></button>
         </div>
@@ -316,6 +336,7 @@
             <span>Tiêu đề trên màn hình lớn</span>
             <input type="text" class="title-input" data-title maxlength="80" placeholder="Ví dụ: Kiểm tra 15 phút — Lớp 10A">
           </label>
+          <label class="opt card-theme-opt"><input type="checkbox" id="optCardTheme"><span class="switch" aria-hidden="true"></span>Dùng nền cho đồng hồ trên trang</label>
           <button class="btn-ghost photo-btn" type="button" data-photo hidden><svg class="ic"><use href="#i-image"/></svg><span>Đổi ảnh nền</span></button>
         </div>
         <div class="theme-filter" id="themeFilter" role="group" aria-label="Lọc nền">
@@ -373,6 +394,7 @@
             <dt><kbd>T</kbd></dt><dd>Đổi nền (khi toàn màn hình)</dd>
             <dt><kbd>P</kbd></dt><dd>Cửa sổ nổi</dd>
             <dt><kbd>G</kbd></dt><dd>Thu gọn / mở rộng</dd>
+            <dt><kbd>M</kbd></dt><dd>Bật / tắt nhạc nền</dd>
             <dt><kbd>?</kbd></dt><dd>Hướng dẫn nhanh</dd>
             <dt><kbd>N</kbd></dt><dd>Sang bước tiếp (chuỗi)</dd>
             <dt><kbd>+</kbd></dt><dd>Thêm 1 phút</dd>
@@ -451,9 +473,20 @@
     <div class="stage-top">
       <span class="stage-clock" id="stageClock" aria-label="Giờ hiện tại"></span>
       <div class="stage-top-actions">
+        <button class="st-btn st-icon" type="button" id="stageMusic" aria-pressed="false" aria-expanded="false" aria-controls="stageMusicPop" title="Chọn nhạc nền (M: bật / tắt)" aria-label="Chọn nhạc nền"><svg class="ic ic-on"><use href="#i-music"/></svg><svg class="ic ic-off"><use href="#i-music-off"/></svg></button>
         <button class="st-btn" type="button" id="stagePanelBtn" title="Đổi nền, kiểu hiển thị (T: đổi nền nhanh)"><svg class="ic"><use href="#i-palette"/></svg><span class="st-label">Giao diện</span></button>
         <button class="st-btn st-icon" type="button" id="stageExit" title="Thoát toàn màn hình (F)" aria-label="Thoát toàn màn hình"><svg class="ic"><use href="#i-minimize"/></svg></button>
       </div>
+    </div>
+
+    <!-- Chọn nhạc ngay trong khung toàn màn hình -->
+    <div class="music-pop" id="stageMusicPop" role="dialog" aria-label="Nhạc nền" hidden>
+      <div class="music-pop-head">
+        <label class="opt"><input type="checkbox" id="stageMusicOn"><span class="switch" aria-hidden="true"></span><b>Nhạc nền</b></label>
+        <label class="vol" title="Âm lượng nhạc nền"><svg class="ic"><use href="#i-volume"/></svg><input type="range" data-music-vol min="0" max="100" step="5" aria-label="Âm lượng nhạc nền"></label>
+      </div>
+      <p class="music-now" data-music-now hidden></p>
+      <div class="music-list" id="stageMusicList" role="listbox" aria-label="Chọn bài"></div>
     </div>
 
     <div class="stage-main">
@@ -508,6 +541,12 @@
         <label class="opt"><input type="checkbox" id="optStageClock"><span class="switch" aria-hidden="true"></span>Hiện giờ hiện tại</label>
         <label class="opt"><input type="checkbox" id="optStageNext"><span class="switch" aria-hidden="true"></span>Hiện việc sắp làm</label>
         <label class="opt opt-hint"><input type="checkbox" id="optStageFocus"><span class="switch" aria-hidden="true"></span><span>Chế độ tập trung<small>Đang chạy thì ẩn việc sắp làm và giờ hiện tại, phút cuối mới hiện lại</small></span></label>
+      </div>
+      <div class="panel-music">
+        <div class="panel-label">Nhạc nền</div>
+        <select class="select music-select" data-music-src aria-label="Chọn nhạc nền"></select>
+        <label class="vol" title="Âm lượng nhạc nền"><svg class="ic"><use href="#i-volume"/></svg><input type="range" data-music-vol min="0" max="100" step="5" aria-label="Âm lượng nhạc nền"></label>
+        <p class="music-now" data-music-now hidden></p>
       </div>
       <div>
         <div class="panel-label">Nền</div>
@@ -668,6 +707,7 @@
   </dialog>
 
   <input type="file" id="photoInput" accept="image/*" hidden>
+  <input type="file" id="musicInput" accept="audio/*" hidden>
 
   <!-- Đọc cho trình đọc màn hình: còn mấy phút, sang bước, hết giờ -->
   <div class="visually-hidden" id="srLive" aria-live="assertive" aria-atomic="true"></div>
@@ -690,6 +730,7 @@
   <script src="assets/js/timer-core.js" defer></script>
   <script src="assets/js/themes.js" defer></script>
   <script src="assets/js/sounds.js" defer></script>
+  <script src="assets/js/soundscapes.js" defer></script>
   <script src="assets/js/pip.js" defer></script>
   <script src="assets/js/app.js" defer></script>
   <script src="assets/js/api.js" defer></script>

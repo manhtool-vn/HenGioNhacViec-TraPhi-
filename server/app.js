@@ -16,12 +16,14 @@ const { authRoutes } = require('./routes/auth');
 const { meRoutes } = require('./routes/me');
 const { adminRoutes } = require('./routes/admin');
 const { shopRoutes } = require('./routes/shop');
+const { musicRoutes } = require('./routes/music');
 const { serveStatic } = require('./routes/static');
 const { createPaymentService } = require('./services/payments');
+const { createMusicService } = require('./services/music');
 
 const CSRF_HEADER = 'x-requested-with';
 const CSRF_VALUE = 'hengio';
-const ROUTES = [authRoutes, meRoutes, shopRoutes, adminRoutes];
+const ROUTES = [authRoutes, meRoutes, shopRoutes, musicRoutes, adminRoutes]; // musicRoutes trước adminRoutes vì có /api/admin/music
 // Máy chủ ngân hàng gọi vào (không phải trình duyệt) → không áp chống CSRF, xác thực bằng khóa riêng
 const SERVER_TO_SERVER = new Set(['/api/payments/webhook']);
 
@@ -37,6 +39,7 @@ function createApp(opts) {
   ctx.google = createGoogleService({ config, db, fetch, log });
   ctx.users = createUserService(ctx);
   ctx.payments = createPaymentService(ctx);
+  ctx.music = createMusicService(ctx);
 
   // Lấy người dùng đang đăng nhập; nếu không có thì trả lỗi 401 (code token_expired để trang tự làm mới token)
   ctx.requireUser = function (req, res) {

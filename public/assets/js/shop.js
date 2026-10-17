@@ -49,7 +49,8 @@
       });
     }
     var proCount = TT.list.filter(function (x) { return x.tier === 'pro'; }).length;
-    list.push({ id: 'pro', name: 'Gói Pro trọn đời', price: s.pro.price, desc: 'Tất cả ' + proCount + ' nền Pro, gồm cả ảnh của bạn và các nền ra mắt sau này', badge: 'Đáng mua nhất', best: true });
+    var musicPro = window.TimerMusic ? window.TimerMusic.list.filter(function (x) { return x.tier === 'pro'; }).length : 0;
+    list.push({ id: 'pro', name: 'Gói Pro trọn đời', price: s.pro.price, desc: 'Tất cả ' + proCount + ' nền Pro' + (musicPro ? ', ' + musicPro + ' bản nhạc nền Pro' : '') + ', ảnh của bạn và các nền ra mắt sau này', badge: 'Đáng mua nhất', best: true });
     return list;
   }
 

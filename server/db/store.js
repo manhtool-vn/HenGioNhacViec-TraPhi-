@@ -23,6 +23,7 @@ function defaults() {
     },
     users: {},          // id → hồ sơ + dữ liệu đồng bộ
     orders: {},         // id → đơn mua nền
+    music: {},          // id → bài trong thư viện nhạc (file ở data/music/)
     payments: {},       // mã giao dịch ngân hàng → đã xử lý (chống xử lý trùng) + tiền chưa khớp đơn
     refreshTokens: {},  // sha256(token) → { userId, family, expiresAt, usedAt, ua, createdAt }
     oauthStates: {},    // sha256(state) → { verifier, returnTo, expiresAt }

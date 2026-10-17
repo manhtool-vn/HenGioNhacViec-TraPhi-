@@ -7,10 +7,11 @@
 
   function raw(method, path, body) {
     var headers = { 'X-Requested-With': 'hengio' };
-    if (body !== undefined) headers['Content-Type'] = 'application/json';
+    var isFile = typeof Blob !== 'undefined' && body instanceof Blob; // tải file lên: gửi nguyên nội dung
+    if (body !== undefined) headers['Content-Type'] = isFile ? 'application/octet-stream' : 'application/json';
     return fetch('/api' + path, {
       method: method, headers: headers, credentials: 'same-origin', cache: 'no-store',
-      body: body !== undefined ? JSON.stringify(body) : undefined
+      body: body === undefined ? undefined : isFile ? body : JSON.stringify(body)
     }).then(function (r) {
       return r.json().catch(function () { return {}; }).then(function (d) { return { status: r.status, ok: r.ok, data: d }; });
     });

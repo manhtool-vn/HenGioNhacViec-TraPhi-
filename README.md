@@ -80,6 +80,33 @@ Giá thấp, mua 1 lần, không gia hạn, để người dùng dễ quyết đ
 
 **Bảo mật:** giá do máy chủ tính (trang gửi giá lên cũng bị bỏ qua); khóa webhook so theo thời gian không đổi, không bao giờ trả ra trang quản trị; webhook là đường duy nhất được miễn kiểm tra CSRF và có giới hạn tần suất; người dùng chỉ xem được đơn của chính mình; tối đa 3 đơn chờ / người, 20 đơn / giờ.
 
+## Nhạc nền (không bản quyền)
+Nhạc được **tạo ngay trên máy người nghe bằng Web Audio** (public/assets/js/soundscapes.js), không dùng bản ghi âm của ai: không vướng bản quyền, không bị hệ thống nhận diện bản quyền của YouTube/Facebook báo khi livestream, nặng 0 KB, chạy cả khi mất mạng, phát mãi không lặp.
+
+| Nhóm | Bản | Cách tạo | Hạng |
+|---|---|---|---|
+| Tập trung | Tiếng ồn nâu, Tiếng ồn hồng | tiếng ồn tích phân / lọc Paul Kellet | Miễn phí |
+| Thiên nhiên | Mưa, Sóng biển, Gió, Lửa trại | tiếng ồn qua bộ lọc + dao động chậm (LFO) + tiếng tách ngẫu nhiên | Miễn phí |
+| Nhạc | Không gian, Lofi, Đàn tranh, Hộp nhạc | hợp âm / trống tổng hợp, gảy dây Karplus–Strong trên thang ngũ cung, giai điệu đi bậc ngẫu nhiên, vang dựng bằng xung | Pro |
+| Cổ điển nổi tiếng | Prelude in C (Bach), Für Elise, Ode to Joy (Beethoven) · Canon in D (Pachelbel), Gymnopédie No.1 (Satie), Greensleeves | bản nhạc viết bằng ký hiệu chữ (`C4:1 E4+G4:2`), piano tổng hợp nhiều bè, có pedal và vang | 3 miễn phí · 3 Pro |
+
+- Mỗi nền có **nhạc gợi ý** (themes.js → MUSIC): Mưa → Mưa, Đại dương → Sóng, Tết / Trung thu / Giỗ Tổ → Đàn tranh, Noel / 8-3 / Sinh nhật → Hộp nhạc… Chọn "Theo nền" thì đổi nền là đổi nhạc.
+- Mặc định **chỉ phát khi đang đếm**: bấm Bắt đầu nhạc lên dần, tạm dừng / hết giờ nhỏ dần rồi tắt; chuông hết giờ kêu thì nhạc nhỏ lại cho nghe rõ chuông.
+- Âm lượng riêng cho nhạc, **Nghe thử** 15 giây, nút ♪ và phím **M** bật/tắt nhanh ở toàn màn hình.
+- **Nhạc của bạn**: chọn file trên máy, phát bằng blob: URL (CSP có media-src blob:), không gửi lên máy chủ; tải lại trang phải chọn lại.
+- Nhạc Pro chỉ khóa khi bật bán nền; có gói Pro hoặc đang dùng nền Pro thì nghe được nhạc gợi ý của nền đó.
+- Tab ở nền: bộ lập lịch hẹn nốt trước 2 giây để không hụt nhịp; tab đang phát tiếng không bị trình duyệt làm chậm.
+- **Cổ điển**: tác phẩm của các nhà soạn nhạc mất trên 100 năm đã thuộc phạm vi công cộng; bản phát là piano do ManhTool tự chơi lại bằng code, không dùng bản thu âm của ai (bản thu âm có bản quyền riêng). Thêm bản mới: viết vào `SCORES` trong soundscapes.js, mọi bè phải dài bằng nhau (có kiểm thử).
+- **Dòng "Đang phát"** dưới ô chọn nhạc: tên bài, tác giả, giấy phép và link nguồn (bắt buộc với nhạc CC BY).
+- **Trình duyệt chặn tiếng** cho tới cú bấm đầu tiên. Tải lại trang khi đang đếm thì nhạc tự phát ngay khi người dùng bấm hay gõ phím bất kỳ đâu, kèm một dòng nhắc "Bấm vào bất kỳ đâu trên trang để bật nhạc nền".
+
+### Thư viện nhạc (quản trị viên tải lên)
+Trang Quản trị → **Nhạc nền**: tải MP3/M4A/OGG/WAV/FLAC/WEBM (≤ 25 MB) kèm tên bài, tác giả, **giấy phép** (CC0, CC BY 4.0, CC BY-SA 4.0, Phạm vi công cộng, Đã mua bản quyền, Tự sáng tác), link nguồn, "Hợp với", ai được nghe (mọi người / gói Pro). Bắt buộc tích "Tôi có quyền phát hành bản nhạc này".
+- File lưu ở `data/music/` (không đưa lên git, không phục vụ trực tiếp); thông tin bài ở `db.json → music`. Máy chủ nhận diện định dạng bằng byte đầu file, không tin đuôi tên file.
+- Khách thấy nhóm **Thư viện ManhTool** trong ô chọn nhạc. Phát qua `GET /api/music/:id/file` (hỗ trợ Range để tua/lặp); bài Pro trả 403 cho người chưa có gói khi đang khóa nền Pro.
+- API: `GET /api/music` · `GET|POST /api/admin/music` (POST: thân = file, `?meta=<JSON>`) · `PATCH|DELETE /api/admin/music/:id`.
+- **Không đăng bài hát thương mại** (Vpop, Kpop, nhạc phim, bảng xếp hạng, "lofi chill" trên YouTube…): tải về được không có nghĩa là được phát lại. Nguồn hợp pháp: Free Music Archive, Pixabay Music, ccMixter, Musopen (bản thu cổ điển CC), Incompetech (CC BY), YouTube Audio Library (đọc điều kiện từng bài), hoặc mua giấy phép trên Epidemic Sound / Artlist.
+
 ## Tên ứng dụng trên màn hình đăng nhập Google
 Dòng "to continue to …" lấy từ **OAuth consent screen** của dự án Google Cloud chứa Client ID, không nằm trong code. Để hiện "ManhTool":
 1. https://console.cloud.google.com → chọn đúng dự án của Client ID → **APIs & Services → OAuth consent screen** (bản mới: **Google Auth Platform → Branding**).

@@ -6,6 +6,7 @@
   var TT = window.TimerThemes;
   var TS = window.TimerSounds;
   var PIP = window.TimerPiP;
+  var TM = window.TimerMusic;
   var $ = function (id) { return document.getElementById(id); };
   var BASE_TITLE = document.title;
   var OPENED_FROM_SHARE = /[?&]p=/.test(location.search); // mở từ liên kết chia sẻ thì không bật hướng dẫn
@@ -105,7 +106,8 @@
 
   var opts = {
     mode: 'single', pick: 'list', sound: true, soundType: 'bell', volume: 70, speak: false, pre: 0, loop: false,
-    notify: false, wake: false, theme: TT.list[0].id, stageStyle: 'ring', stageClock: true, stageNext: true, stageFocus: true, compact: false, title: '',
+    notify: false, wake: false, theme: TT.list[0].id, stageStyle: 'ring', stageClock: true, stageNext: true, stageFocus: true, compact: false, cardTheme: true, title: '',
+    musicOn: false, musicSrc: 'theme', musicVol: 40, musicRun: true,
     singleMs: 0 // thời gian của kiểu "Đếm 1 lần", tách riêng để bước của chuỗi không ghi đè
   };
   (function () {
@@ -127,6 +129,10 @@
     opts.stageNext = s.stageNext !== false;
     opts.stageFocus = s.stageFocus !== false;
     opts.compact = s.compact === true;
+    opts.musicOn = s.musicOn === true;
+    if (s.musicSrc === 'theme' || s.musicSrc === 'file' || (TM && TM.get(s.musicSrc))) opts.musicSrc = s.musicSrc;
+    if (s.musicVol >= 0 && s.musicVol <= 100) opts.musicVol = Math.round(s.musicVol);
+    opts.musicRun = s.musicRun !== false;
     opts.title = TC.cleanText(s.title).slice(0, 80);
     if (s.singleMs > 0 && s.singleMs <= TC.MAX_MS) opts.singleMs = Math.floor(s.singleMs);
   })();
@@ -260,6 +266,7 @@
         ? text + (state.status === 'paused' ? ' (dừng)' : '') + (hasPlan ? ' · ' + curStep().name : '') + ' · ' + BASE_TITLE
         : BASE_TITLE;
     }
+    syncMusic();
   }
 
   function fillInputs(ms) {
@@ -1172,9 +1179,23 @@
         if (!AC) return;
         audioCtx = new AC();
       }
-      if (audioCtx.state === 'suspended') audioCtx.resume();
+      if (audioCtx.state === 'suspended') {
+        var p = audioCtx.resume();
+        if (p && p.then) p.then(function () { if (typeof syncMusic === 'function') syncMusic(); }, function () {});
+      }
     } catch (e) {}
   }
+  // Tải lại trang khi đang đếm: nhạc phải chờ cú bấm đầu tiên (bất kỳ đâu) mới phát được
+  ['pointerdown', 'keydown', 'touchend'].forEach(function (ev) {
+    document.addEventListener(ev, function () {
+      if (audioCtx && audioCtx.state === 'running') return;
+      unlockAudio();
+      if (typeof syncMusic === 'function') syncMusic();
+    }, true);
+  });
+  document.addEventListener('visibilitychange', function () {
+    if (!document.hidden && audioCtx && audioCtx.state !== 'running') unlockAudio();
+  });
   function playSound(id) { TS.play(audioCtx, id, opts.volume / 100); }
 
   var alarm = {
@@ -1186,6 +1207,7 @@
       alarm.on = true;
       alarm.until = Date.now() + 60000; // kêu tối đa 1 phút
       doneDlg.classList.add('is-ringing');
+      if (music) music.duck(true); // nhạc nền nhỏ lại để nghe rõ chuông
       playSound(opts.soundType);
       // Đang đọc to thì giãn chuông ra để nghe rõ lời
       var every = TS.every(opts.soundType) * (opts.speak && canSpeak ? 3 : 1);
@@ -1197,6 +1219,7 @@
     stop: function () {
       clearInterval(alarm.timer);
       alarm.timer = null;
+      if (alarm.on && music) music.duck(false);
       alarm.on = false;
       doneDlg.classList.remove('is-ringing');
     }
@@ -1411,6 +1434,8 @@
     saveOpts();
     markTheme();
     if (stageOpen) applyStageTheme();
+    applyCardTheme();
+    renderMusicSelects(); // nhãn "Theo nền (…)" đổi theo nền mới
     render();
   }
 
@@ -1419,6 +1444,30 @@
     paint(stage, theme);
     buildFx(stageFx, theme.fx);
   }
+
+  /* Nền cũng áp lên đồng hồ trên trang (ô quanh vòng tròn), không cần mở toàn màn hình.
+     Phần đặt giờ bên dưới giữ màu của trang cho dễ đọc. Tắt được ở thẻ Giao diện đồng hồ. */
+  var dialScreen = $('dialScreen'), dialFx = $('dialFx'), cardFxKey = '';
+  function applyCardTheme() {
+    var on = opts.cardTheme !== false;
+    timerBox.classList.toggle('is-themed', on);
+    $('optCardTheme').checked = on;
+    if (!on) {
+      dialScreen.removeAttribute('data-fx');
+      dialFx.textContent = '';
+      cardFxKey = '';
+      return;
+    }
+    var theme = TT.get(opts.theme);
+    paint(dialScreen, theme);
+    // Hạt hiệu ứng (sao, mưa, pháo hoa…) ít hơn hẳn khung toàn màn hình cho nhẹ trang
+    if (cardFxKey !== theme.id) { buildFx(dialFx, theme.fx, 0.3); cardFxKey = theme.id; }
+  }
+  $('optCardTheme').addEventListener('change', function () {
+    opts.cardTheme = this.checked;
+    saveOpts();
+    applyCardTheme();
+  });
 
   function setThemeColor(color) {
     var meta = document.querySelector('meta[name="theme-color"]');
@@ -1474,11 +1523,11 @@
   function rnd(a, b) { return a + Math.random() * (b - a); }
   function pct() { return rnd(0, 100).toFixed(2) + '%'; }
 
-  function buildFx(box, fx) {
+  function buildFx(box, fx, scale) {
     box.textContent = '';
     if (reduceMotion) return;
     // Màn hình nhỏ thì bớt hạt cho nhẹ máy
-    var k = window.innerWidth < 700 ? 0.55 : 1;
+    var k = (window.innerWidth < 700 ? 0.55 : 1) * (scale || 1);
     var N = function (n) { return Math.round(n * k); };
     if (fx === 'stars') {
       particles(box, N(90), 'fx-star', function () {
@@ -1692,7 +1741,7 @@
     stage.classList.remove('ui-hidden');
     clearTimeout(uiTimer);
     uiTimer = setTimeout(function () {
-      if (stageOpen && state.status === 'running' && stagePanel.hidden && !doneDlg.open) stage.classList.add('ui-hidden');
+      if (stageOpen && state.status === 'running' && stagePanel.hidden && musicPop.hidden && !doneDlg.open) stage.classList.add('ui-hidden');
     }, 3000);
   }
   ['pointermove', 'pointerdown', 'keydown', 'touchstart'].forEach(function (ev) {
@@ -1721,6 +1770,7 @@
   $('stageSkip').addEventListener('click', skipStep);
   $('stagePanelBtn').addEventListener('click', function () {
     stagePanel.hidden = !stagePanel.hidden;
+    if (!stagePanel.hidden) setMusicPop(false);
     if (!stagePanel.hidden) { renderStageGrid(); $('stagePanelClose').focus(); }
   });
   $('stagePanelClose').addEventListener('click', function () { stagePanel.hidden = true; $('stagePanelBtn').focus(); });
@@ -1969,6 +2019,9 @@
     } else if (e.code === 'KeyP') {
       e.preventDefault();
       togglePip();
+    } else if (e.code === 'KeyM') {
+      e.preventDefault();
+      setMusicOn(!opts.musicOn);
     } else if (e.code === 'KeyG' && !stageOpen) {
       e.preventDefault();
       setCompact(!opts.compact);
@@ -1980,7 +2033,8 @@
       skipStep();
     } else if (e.key === 'Escape' && stageOpen) {
       // Trình duyệt không hỗ trợ toàn màn hình thật (vd iPhone) thì khung chỉ là lớp phủ
-      if (!stagePanel.hidden) stagePanel.hidden = true;
+      if (!musicPop.hidden) { setMusicPop(false); $('stageMusic').focus(); }
+      else if (!stagePanel.hidden) stagePanel.hidden = true;
       else closeStage();
     } else if (e.key === '+' || e.key === '=') {
       addMinute();
@@ -2072,6 +2126,328 @@
   window.addEventListener('appinstalled', function () {
     btnInstall.hidden = true;
     toast('Đã cài xong, mở "Hẹn giờ" từ màn hình chính hoặc menu ứng dụng');
+  });
+
+  /* ---------- Nhạc nền (tạo bằng Web Audio, xem assets/js/soundscapes.js) ----------
+     Mặc định chỉ phát khi đang đếm: bấm Bắt đầu là nhạc lên dần, tạm dừng / hết giờ là nhỏ dần rồi tắt.
+     "Theo nền": đổi nền là đổi nhạc. "Nhạc của bạn": file trên máy, không gửi đi đâu, tải lại trang phải chọn lại. */
+  var music = TM ? TM.createEngine() : null;
+  var musicFile = null;            // { url, name }
+  var lastMusicKey = '';
+  var preview = { id: null, timer: null };
+  var musicBlockedTold = false;
+  var musicPop = $('stageMusicPop');
+  var library = [];                // bài trong Thư viện ManhTool (quản trị viên tải lên, có giấy phép)
+
+  function libTrack(src) {
+    if (!/^lib:/.test(src || '')) return null;
+    var id = src.slice(4);
+    return library.find(function (t) { return t.id === id; }) || null;
+  }
+  // Tải danh sách thư viện (không có máy chủ / lỗi mạng thì thôi, vẫn còn nhạc tạo bằng máy)
+  function loadLibrary() {
+    if (!window.HGApi || location.protocol === 'file:') return;
+    window.HGApi.request('GET', '/music').then(function (r) {
+      if (!r.ok || !r.data || !Array.isArray(r.data.tracks)) return;
+      library = r.data.tracks;
+      renderMusicSelects();
+      syncMusic();
+    }, function () {});
+  }
+  var musicSelects = document.querySelectorAll('[data-music-src]');
+  var musicVols = document.querySelectorAll('[data-music-vol]');
+
+  function userIsPro() {
+    var a = window.TimerAccount && window.TimerAccount.state();
+    return !!(a && a.user && a.user.pro);
+  }
+  // Nhạc Pro chỉ khóa khi đang bán nền; người có gói Pro hoặc đang dùng nền Pro thì nghe được
+  function musicLocked(s) { return !!(s && s.tier === 'pro' && TT.lockPremium && !userIsPro()); }
+
+  function themeMusicId() {
+    var t = TT.get(opts.theme), s = TM.get(t.music) || TM.get('brown');
+    if (musicLocked(s) && t.tier !== 'pro') return 'brown';
+    return s.id;
+  }
+
+  // Bản nhạc sẽ phát theo lựa chọn (chưa xét đang đếm hay không)
+  function chosenMusic() {
+    if (opts.musicSrc === 'file') return musicFile ? 'file' : themeMusicId();
+    if (/^lib:/.test(opts.musicSrc)) {
+      var lt = libTrack(opts.musicSrc);
+      return lt && !lt.locked ? opts.musicSrc : themeMusicId();
+    }
+    if (opts.musicSrc === 'theme') return themeMusicId();
+    var s = TM.get(opts.musicSrc);
+    return !s || musicLocked(s) ? themeMusicId() : s.id;
+  }
+
+  function syncMusic() {
+    if (!music) return;
+    var target = preview.id || (opts.musicOn && (!opts.musicRun || state.status === 'running') ? chosenMusic() : null);
+    var key = target ? target + (target === 'file' ? ':' + musicFile.url : '') : '';
+    if (key === lastMusicKey) return;
+    if (!target) { lastMusicKey = ''; music.stop(); renderMusicButtons(); return; }
+    if (!audioCtx) { // chưa có cú bấm nào thì trình duyệt chưa cho phát tiếng
+      if (!musicBlockedTold) { musicBlockedTold = true; toast('Bấm vào bất kỳ đâu trên trang để bật nhạc nền'); }
+      return;
+    }
+    lastMusicKey = key;
+    music.attach(audioCtx);
+    music.setVolume(opts.musicVol / 100);
+    var lt = libTrack(target);
+    if (lt) music.play('file', lt.url);
+    else music.play(target, musicFile && musicFile.url);
+    renderMusicButtons();
+  }
+
+  function musicLabel(id) {
+    if (id === 'file') return musicFile ? musicFile.name : 'Nhạc của bạn';
+    var lt = libTrack(id);
+    if (lt) return lt.title;
+    var s = TM.get(id);
+    return s ? s.name : '';
+  }
+
+  // Danh sách chọn nhạc (có 2 chỗ: tùy chọn trên trang và bảng Giao diện ở toàn màn hình)
+  function renderMusicSelects() {
+    if (!TM) return;
+    musicSelects.forEach(function (sel) {
+      sel.textContent = '';
+      var o = document.createElement('option');
+      o.value = 'theme';
+      o.textContent = 'Theo nền (' + musicLabel(themeMusicId()) + ')';
+      sel.appendChild(o);
+      Object.keys(TM.groups).forEach(function (g) {
+        var og = document.createElement('optgroup');
+        og.label = TM.groups[g];
+        TM.list.filter(function (s) { return s.group === g; }).forEach(function (s) {
+          var op = document.createElement('option');
+          op.value = s.id;
+          op.textContent = s.name + (musicLocked(s) ? ' · Pro' : '') + ' — ' + s.desc;
+          og.appendChild(op);
+        });
+        sel.appendChild(og);
+      });
+      if (library.length) {
+        var lg = document.createElement('optgroup');
+        lg.label = 'Thư viện ManhTool';
+        library.forEach(function (t) {
+          var op = document.createElement('option');
+          op.value = 'lib:' + t.id;
+          op.textContent = t.title + (t.locked ? ' · Pro' : '') + ' — ' + t.artist + (t.mood ? ', ' + t.mood : '');
+          lg.appendChild(op);
+        });
+        sel.appendChild(lg);
+      }
+      var f = document.createElement('option');
+      f.value = 'file';
+      f.textContent = musicFile ? 'Nhạc của bạn: ' + musicFile.name : 'Nhạc của bạn (chọn file trên máy)…';
+      sel.appendChild(f);
+      sel.value = opts.musicSrc;
+      if (sel.value !== opts.musicSrc) sel.value = 'theme';
+    });
+    musicVols.forEach(function (r) { r.value = opts.musicVol; });
+    $('optMusic').checked = opts.musicOn;
+    $('optMusicRun').checked = opts.musicRun;
+    renderMusicButtons();
+  }
+
+  function renderMusicButtons() {
+    var b = $('stageMusic');
+    b.setAttribute('aria-pressed', opts.musicOn ? 'true' : 'false');
+    b.title = (opts.musicOn ? 'Tắt nhạc nền' : 'Bật nhạc nền') + ' (M)' + (opts.musicOn ? ': ' + musicLabel(chosenMusic()) : '');
+    $('btnMusicTry').textContent = preview.id ? 'Dừng nghe thử' : 'Nghe thử';
+    renderNowPlaying();
+    renderMusicPop();
+  }
+
+  // Dòng "Đang phát": tên bài + tác giả + giấy phép (bài CC BY bắt buộc ghi công)
+  function renderNowPlaying() {
+    var id = music && music.playing() ? (preview.id || chosenMusic()) : null;
+    document.querySelectorAll('[data-music-now]').forEach(function (p) {
+      p.textContent = '';
+      p.hidden = !id;
+      if (!id) return;
+      var b = document.createElement('b');
+      p.appendChild(document.createTextNode(preview.id ? 'Nghe thử: ' : 'Đang phát: '));
+      p.appendChild(b);
+      var lt = libTrack(id), s = TM.get(id), rest;
+      if (lt) {
+        b.textContent = lt.title;
+        rest = ' — ' + lt.artist + ' · ' + lt.license;
+      } else if (id === 'file') {
+        b.textContent = musicLabel('file');
+        rest = ' · file trên máy bạn';
+      } else if (s && s.author) {
+        b.textContent = s.name;
+        rest = ' — ' + s.author + ' · phạm vi công cộng, piano ManhTool';
+      } else {
+        b.textContent = s ? s.name : '';
+        rest = ' · âm thanh tạo bằng máy';
+      }
+      p.appendChild(document.createTextNode(rest));
+      if (lt && lt.source) {
+        var a = document.createElement('a');
+        a.href = lt.source;
+        a.target = '_blank';
+        a.rel = 'noopener noreferrer';
+        a.textContent = 'nguồn';
+        p.appendChild(document.createTextNode(' · '));
+        p.appendChild(a);
+      }
+    });
+  }
+
+  function setMusicOn(on) {
+    unlockAudio();
+    opts.musicOn = !!on;
+    saveOpts();
+    $('optMusic').checked = opts.musicOn;
+    syncMusic();
+    renderMusicButtons();
+    if (opts.musicOn && opts.musicRun && state.status !== 'running') toast('Nhạc sẽ phát khi bạn bấm Bắt đầu');
+  }
+
+  function stopPreview() {
+    clearTimeout(preview.timer);
+    preview.id = null;
+    syncMusic();
+    renderMusicButtons();
+  }
+
+  // Chọn một bài (từ ô chọn ở trang hoặc danh sách trong khung toàn màn hình).
+  // turnOn: chọn trong khung là muốn nghe luôn → bật nhạc nền thay vì chỉ nghe thử
+  function chooseMusic(v, turnOn) {
+    if (v === 'file') { $('musicInput').click(); return; }
+    var lt = libTrack(v);
+    if (lt && lt.locked) {
+      if (window.TimerShop && window.TimerShop.available()) window.TimerShop.open(null);
+      else toast('Bài này dành cho gói Pro');
+      return;
+    }
+    var s = TM.get(v);
+    if (s && musicLocked(s)) {
+      openUnlock(TT.list.find(function (t) { return t.music === s.id && t.tier === 'pro'; }) || TT.get('lofi'));
+      return;
+    }
+    unlockAudio();
+    opts.musicSrc = v;
+    if (turnOn) opts.musicOn = true;
+    saveOpts();
+    renderMusicSelects();
+    // Đang nghe thử → chuyển sang bản mới; chưa phát gì → cho nghe thử luôn để biết nó thế nào
+    if (preview.id || !opts.musicOn || (opts.musicRun && state.status !== 'running')) startPreview();
+    else syncMusic();
+  }
+  musicSelects.forEach(function (sel) {
+    sel.addEventListener('change', function () {
+      var v = sel.value;
+      sel.value = opts.musicSrc; // bị khóa / mở file thì giữ nguyên; chọn được thì renderMusicSelects đặt lại
+      chooseMusic(v, false);
+    });
+  });
+
+  /* Bảng nhạc trong khung toàn màn hình: bấm nút nốt nhạc để mở, chọn bài là phát luôn */
+  function musicItem(value, name, desc, locked) {
+    var b = document.createElement('button');
+    b.type = 'button';
+    b.className = 'music-item';
+    b.setAttribute('role', 'option');
+    b.dataset.value = value;
+    b.setAttribute('aria-selected', opts.musicSrc === value ? 'true' : 'false');
+    b.innerHTML = '<span class="mi-text"><b></b><small></small></span><svg class="ic mi-mark"><use href="#i-' + (locked ? 'lock' : 'check') + '"/></svg>';
+    b.querySelector('b').textContent = name;
+    b.querySelector('small').textContent = desc;
+    if (locked) b.classList.add('is-locked');
+    b.addEventListener('click', function () { chooseMusic(value, true); });
+    return b;
+  }
+  function renderMusicPop() {
+    if (!TM || !musicPop || musicPop.hidden) return;
+    var list = $('stageMusicList');
+    var top = list.scrollTop;
+    list.textContent = '';
+    list.appendChild(musicItem('theme', 'Theo nền', musicLabel(themeMusicId()) + ' · đổi nền là đổi nhạc', false));
+    function group(label) {
+      var h = document.createElement('div');
+      h.className = 'music-group-label';
+      h.textContent = label;
+      list.appendChild(h);
+    }
+    Object.keys(TM.groups).forEach(function (g) {
+      group(TM.groups[g]);
+      TM.list.filter(function (s) { return s.group === g; }).forEach(function (s) {
+        list.appendChild(musicItem(s.id, s.name, s.desc, musicLocked(s)));
+      });
+    });
+    if (library.length) {
+      group('Thư viện ManhTool');
+      library.forEach(function (t) {
+        list.appendChild(musicItem('lib:' + t.id, t.title, t.artist + (t.mood ? ' · ' + t.mood : ''), t.locked));
+      });
+    }
+    group('Của bạn');
+    list.appendChild(musicItem('file', musicFile ? musicFile.name : 'Chọn file nhạc trên máy…', musicFile ? 'File trên máy, không gửi đi đâu' : 'MP3, M4A… chỉ phát trên máy này', false));
+    list.scrollTop = top;
+    $('stageMusicOn').checked = opts.musicOn;
+  }
+  function setMusicPop(open) {
+    musicPop.hidden = !open;
+    $('stageMusic').setAttribute('aria-expanded', open ? 'true' : 'false');
+    if (!open) return;
+    stagePanel.hidden = true;
+    renderMusicPop();
+    var cur = musicPop.querySelector('[aria-selected="true"]');
+    if (cur) { cur.scrollIntoView({ block: 'center' }); cur.focus({ preventScroll: true }); }
+  }
+  $('stageMusicOn').addEventListener('change', function () { setMusicOn(this.checked); });
+  stage.addEventListener('click', function (e) {
+    // e.target đã bị vẽ lại (vừa chọn bài) thì không còn trong trang → không tính là bấm ra ngoài
+    if (!musicPop.hidden && e.target.isConnected && !musicPop.contains(e.target) && !e.target.closest('#stageMusic')) setMusicPop(false);
+  });
+
+  function startPreview() {
+    unlockAudio();
+    clearTimeout(preview.timer);
+    preview.id = chosenMusic();
+    syncMusic();
+    renderMusicButtons();
+    preview.timer = setTimeout(stopPreview, 15000);
+  }
+
+  musicVols.forEach(function (r) {
+    r.addEventListener('input', function () {
+      opts.musicVol = +r.value;
+      musicVols.forEach(function (o) { if (o !== r) o.value = r.value; });
+      if (music) music.setVolume(opts.musicVol / 100);
+    });
+    r.addEventListener('change', saveOpts);
+  });
+
+  $('optMusic').addEventListener('change', function () { setMusicOn(this.checked); });
+  $('optMusicRun').addEventListener('change', function () { opts.musicRun = this.checked; saveOpts(); syncMusic(); });
+  $('stageMusic').addEventListener('click', function () { setMusicPop(musicPop.hidden); });
+
+  // Nghe thử 15 giây bản đang chọn, kể cả khi chưa bật nhạc / chưa đếm
+  $('btnMusicTry').addEventListener('click', function () {
+    if (preview.id) stopPreview(); else startPreview();
+  });
+
+  $('musicInput').addEventListener('change', function () {
+    var f = this.files[0];
+    this.value = '';
+    if (!f) return;
+    if (!/^audio\//.test(f.type)) { toast('Chỉ chọn được file nhạc'); return; }
+    if (musicFile) URL.revokeObjectURL(musicFile.url);
+    musicFile = { url: URL.createObjectURL(f), name: f.name.replace(/\.[^.]+$/, '').slice(0, 40) };
+    unlockAudio();
+    opts.musicSrc = 'file';
+    opts.musicOn = true;
+    saveOpts();
+    renderMusicSelects();
+    syncMusic();
+    toast('Đã chọn "' + musicFile.name + '". File chỉ phát trên máy này, không gửi đi đâu');
   });
 
   /* ---------- Chế độ gọn: chỉ còn đồng hồ ở giữa trang ---------- */
@@ -2216,6 +2592,9 @@
   window.TimerApp = {
     toast: toast,
     paint: paint,
+    // Bản nhạc nền đang phát (null nếu im lặng) — để kiểm tra / hiển thị
+    musicPlaying: function () { return music ? music.playing() : null; },
+    audioState: function () { return audioCtx ? audioCtx.state : 'none'; },
     isBusy: function () { return isActive() || doneDlg.open; },
     // Chọn nền (sau khi mua xong)
     useTheme: function (id) { chooseTheme(TT.get(id)); },
@@ -2226,6 +2605,11 @@
       renderThemeGrids();
       $('themeNote').hidden = TT.lockPremium;
       if (stageOpen) applyStageTheme();
+      applyCardTheme();
+      renderMusicSelects(); // quyền Pro đổi → nhạc Pro mở / khóa theo
+      lastMusicKey = '';
+      syncMusic();
+      loadLibrary();
     }
   };
 
@@ -2234,6 +2618,7 @@
   if (!isActive()) { round = 0; if (state.status !== 'done') runPlan = null; }
   applyPhoto();
   renderThemeGrids();
+  applyCardTheme();
   $('themeNote').hidden = TT.lockPremium;
   renderPlanEditor();
   renderTasks();
@@ -2251,6 +2636,7 @@
   // Hết giờ trong lúc trang đóng → báo luôn khi mở lại (không kêu chuông vì chưa có cú bấm nào)
   if (state.status === 'done') finish(true);
   setCompact(opts.compact);
+  if (TM) { renderMusicSelects(); loadLibrary(); } else document.querySelector('.music-group').hidden = true;
   renderOccasionHint();
   // Lần đầu vào trang (và không đang đếm) → mở hướng dẫn nhanh
   var toured = false;

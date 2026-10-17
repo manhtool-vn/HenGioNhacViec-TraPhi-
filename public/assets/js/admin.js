@@ -59,8 +59,152 @@
       document.querySelectorAll('[data-panel]').forEach(function (p) { p.hidden = p.dataset.panel !== b.dataset.tab; });
       if (b.dataset.tab !== 'users') loadOverview();
       if (b.dataset.tab === 'orders') loadOrders();
+      if (b.dataset.tab === 'music') loadMusic();
+      else stopListen();
     });
   });
+
+  /* ---------- Thư viện nhạc nền ---------- */
+  var listen = { el: null, id: null };
+  function stopListen() {
+    if (listen.el) listen.el.pause();
+    listen.id = null;
+  }
+  function fmtSize(n) { return n >= 1048576 ? (n / 1048576).toFixed(1) + ' MB' : Math.round(n / 1024) + ' KB'; }
+
+  // Gợi ý tên bài từ tên file (bỏ đuôi, gạch dưới → dấu cách)
+  $('mFile').addEventListener('change', function () {
+    var f = this.files[0];
+    if (f && !$('mTitle').value.trim()) $('mTitle').value = f.name.replace(/\.[^.]+$/, '').replace(/[_-]+/g, ' ').trim().slice(0, 80);
+  });
+
+  $('musicForm').addEventListener('submit', function (e) {
+    e.preventDefault();
+    var f = $('mFile').files[0];
+    if (!f) return toast('Chọn file nhạc trước');
+    if (f.size > 25 * 1048576) return toast('File quá lớn (tối đa 25 MB)');
+    if (!$('mConfirm').checked) return toast('Hãy xác nhận bạn có quyền phát hành bản nhạc này');
+    var meta = {
+      title: $('mTitle').value, artist: $('mArtist').value, license: $('mLicense').value, source: $('mSource').value.trim(),
+      mood: $('mMood').value, tier: $('mTier').value, confirm: true
+    };
+    var btn = $('mSubmit');
+    btn.disabled = true;
+    btn.lastChild.textContent = 'Đang tải lên…';
+    api('POST', '/admin/music?meta=' + encodeURIComponent(JSON.stringify(meta)), f).then(function (r) {
+      btn.disabled = false;
+      btn.lastChild.textContent = 'Tải lên';
+      if (!r.ok) return toast(r.data.error || 'Không tải lên được');
+      toast('Đã thêm "' + r.data.track.title + '"');
+      $('musicForm').reset();
+      loadMusic();
+    }, function () {
+      btn.disabled = false;
+      btn.lastChild.textContent = 'Tải lên';
+      toast('Mất kết nối, thử lại sau');
+    });
+  });
+
+  function patchTrack(t, body, input) {
+    api('PATCH', '/admin/music/' + t.id, body).then(function (r) {
+      if (!r.ok) {
+        toast(r.data.error || 'Không cập nhật được');
+        if (input) input.checked = !input.checked;
+        return;
+      }
+      Object.assign(t, r.data.track);
+    });
+  }
+
+  function loadMusic() {
+    api('GET', '/admin/music').then(function (r) {
+      if (!r.ok) return toast(r.data.error || 'Không tải được thư viện nhạc');
+      var tb = $('music');
+      tb.innerHTML = '';
+      $('musicEmpty').hidden = r.data.tracks.length > 0;
+      $('musicCount').textContent = r.data.tracks.length ? r.data.tracks.length + ' bài' : '';
+      r.data.tracks.forEach(function (t) {
+        var tr = document.createElement('tr');
+
+        var who = document.createElement('td');
+        var row = document.createElement('div');
+        row.className = 'who';
+        var play = document.createElement('button');
+        play.type = 'button';
+        play.className = 'icon-btn';
+        play.title = 'Nghe thử';
+        play.setAttribute('aria-label', 'Nghe thử ' + t.title);
+        play.innerHTML = '<svg class="ic"><use href="#i-play"/></svg>';
+        play.addEventListener('click', function () {
+          if (listen.id === t.id) return stopListen();
+          if (!listen.el) listen.el = new Audio();
+          listen.el.src = t.url;
+          listen.id = t.id;
+          listen.el.play().catch(function () { toast('Không phát được file này'); });
+        });
+        var info = document.createElement('div');
+        info.innerHTML = '<b></b><small></small>';
+        info.firstChild.textContent = t.title;
+        info.lastChild.textContent = t.artist + (t.mood ? ' · ' + t.mood : '');
+        row.appendChild(play);
+        row.appendChild(info);
+        who.appendChild(row);
+
+        var lic = document.createElement('td');
+        lic.textContent = t.license;
+        if (t.source) {
+          var a = document.createElement('a');
+          a.href = t.source;
+          a.target = '_blank';
+          a.rel = 'noopener noreferrer';
+          a.textContent = 'nguồn';
+          lic.appendChild(document.createTextNode(' · '));
+          lic.appendChild(a);
+        }
+
+        var tier = document.createElement('td');
+        var sel = document.createElement('select');
+        sel.className = 'select';
+        sel.setAttribute('aria-label', 'Ai được nghe ' + t.title);
+        [['free', 'Mọi người'], ['pro', 'Gói Pro']].forEach(function (o) {
+          var op = document.createElement('option');
+          op.value = o[0];
+          op.textContent = o[1];
+          sel.appendChild(op);
+        });
+        sel.value = t.tier;
+        sel.addEventListener('change', function () { patchTrack(t, { tier: sel.value }); });
+        tier.appendChild(sel);
+
+        var act = document.createElement('td');
+        act.appendChild(toggle('Hiện ' + t.title + ' cho khách', t.active, function (v, input) { patchTrack(t, { active: v }, input); }));
+
+        var size = document.createElement('td');
+        size.textContent = fmtSize(t.size);
+        size.title = 'Thêm lúc ' + fmtDate(t.createdAt) + (t.by ? ' bởi ' + t.by : '');
+
+        var del = document.createElement('td');
+        var b = document.createElement('button');
+        b.type = 'button';
+        b.className = 'saved-del row-del';
+        b.title = 'Xóa bài';
+        b.setAttribute('aria-label', 'Xóa ' + t.title);
+        b.innerHTML = '<svg class="ic"><use href="#i-trash"/></svg>';
+        b.addEventListener('click', function () {
+          if (!window.confirm('Xóa vĩnh viễn bài "' + t.title + '" khỏi thư viện?')) return;
+          if (listen.id === t.id) stopListen();
+          api('DELETE', '/admin/music/' + t.id).then(function (x) {
+            toast(x.ok ? 'Đã xóa "' + t.title + '"' : x.data.error || 'Không xóa được');
+            loadMusic();
+          });
+        });
+        del.appendChild(b);
+
+        [who, lic, tier, act, size, del].forEach(function (td) { tr.appendChild(td); });
+        tb.appendChild(tr);
+      });
+    });
+  }
 
   /* ---------- Tổng quan + cài đặt + nhật ký ---------- */
   function loadOverview() {

@@ -18,6 +18,7 @@ function csp() {
     "connect-src 'self' https://fonts.googleapis.com https://fonts.gstatic.com https://*.google-analytics.com https://*.analytics.google.com https://*.googletagmanager.com",
     "manifest-src 'self'",
     "worker-src 'self'",
+    "media-src 'self' blob:", // "Nhạc của bạn": file chọn trên máy, phát qua blob: URL
     "object-src 'none'",
     "base-uri 'self'",
     "form-action 'self'",

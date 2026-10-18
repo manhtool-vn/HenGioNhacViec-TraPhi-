@@ -210,22 +210,24 @@
     var sub = idleView ? idleView.sub : subText(now);
     var hasPlan = !!(runPlan && isActive());
 
-    timeText.textContent = text;
-    timeText.classList.toggle('is-long', text.length > 5);
-    ringBar.style.strokeDashoffset = String(RING_LEN * (1 - frac));
-    timerBox.dataset.status = state.status;
-    timerBox.dataset.mode = opts.mode;
-    timerBox.classList.toggle('is-warning', warn);
-    timerBox.classList.toggle('has-plan', hasPlan);
-    btnStart.querySelector('span').textContent = label;
-    timeSub.textContent = sub;
-    if (round > 1 && isActive()) {
-      var b = document.createElement('span');
-      b.className = 'round-badge';
-      b.textContent = 'Lượt ' + round;
-      timeSub.appendChild(b);
+    if (!stageOpen) {
+      timeText.textContent = text;
+      timeText.classList.toggle('is-long', text.length > 5);
+      ringBar.style.strokeDashoffset = String(RING_LEN * (1 - frac));
+      timerBox.dataset.status = state.status;
+      timerBox.dataset.mode = opts.mode;
+      timerBox.classList.toggle('is-warning', warn);
+      timerBox.classList.toggle('has-plan', hasPlan);
+      btnStart.querySelector('span').textContent = label;
+      timeSub.textContent = sub;
+      if (round > 1 && isActive()) {
+        var b = document.createElement('span');
+        b.className = 'round-badge';
+        b.textContent = 'Lượt ' + round;
+        timeSub.appendChild(b);
+      }
+      btnReset.disabled = state.status === 'idle';
     }
-    btnReset.disabled = state.status === 'idle';
 
     var stageSub = sub;
     if (hasPlan) {
@@ -1530,73 +1532,73 @@
     var k = (window.innerWidth < 700 ? 0.55 : 1) * (scale || 1);
     var N = function (n) { return Math.round(n * k); };
     if (fx === 'stars') {
-      particles(box, N(90), 'fx-star', function () {
-        var s = rnd(0.6, 2.6).toFixed(1);
+      particles(box, N(45), 'fx-star', function () {
+        var s = rnd(0.8, 2.6).toFixed(1);
         return 'left:' + pct() + ';top:' + pct() + ';width:' + s + 'px;height:' + s + 'px;animation-duration:' + rnd(2, 6).toFixed(1) + 's;animation-delay:-' + rnd(0, 6).toFixed(1) + 's';
       });
     } else if (fx === 'petals' || fx === 'mai' || fx === 'roses') {
-      particles(box, N(fx === 'mai' ? 18 : 22), fx === 'mai' ? 'fx-mai' : fx === 'roses' ? 'fx-petal is-rose' : 'fx-petal', function () {
+      particles(box, N(fx === 'mai' ? 14 : 16), fx === 'mai' ? 'fx-mai' : fx === 'roses' ? 'fx-petal is-rose' : 'fx-petal', function () {
         var w = rnd(8, fx === 'mai' ? 22 : 18);
         return 'left:' + pct() + ';width:' + w.toFixed(0) + 'px;height:' + (fx === 'mai' ? w : w * 0.7).toFixed(0) + 'px;animation-duration:' + rnd(10, 20).toFixed(1) + 's;animation-delay:-' + rnd(0, 20).toFixed(1) + 's;opacity:' + rnd(0.5, 0.95).toFixed(2);
       });
     } else if (fx === 'rain') {
-      particles(box, N(80), 'fx-drop', function () {
+      particles(box, N(40), 'fx-drop', function () {
         return 'left:' + rnd(0, 130).toFixed(1) + '%;height:' + rnd(50, 110).toFixed(0) + 'px;animation-duration:' + rnd(0.55, 1.1).toFixed(2) + 's;animation-delay:-' + rnd(0, 2).toFixed(2) + 's;opacity:' + rnd(0.3, 0.8).toFixed(2);
       });
     } else if (fx === 'snow') {
-      particles(box, N(90), 'fx-flake', function () {
-        var s = rnd(2, 7).toFixed(1);
-        return 'left:' + pct() + ';width:' + s + 'px;height:' + s + 'px;animation-duration:' + rnd(8, 20).toFixed(1) + 's;animation-delay:-' + rnd(0, 20).toFixed(1) + 's;opacity:' + rnd(0.5, 1).toFixed(2) + ';filter:blur(' + (s > 5 ? 1 : 0) + 'px)';
+      particles(box, N(45), 'fx-flake', function () {
+        var s = rnd(2, 6).toFixed(1);
+        return 'left:' + pct() + ';width:' + s + 'px;height:' + s + 'px;animation-duration:' + rnd(8, 20).toFixed(1) + 's;animation-delay:-' + rnd(0, 20).toFixed(1) + 's;opacity:' + rnd(0.5, 1).toFixed(2);
       });
     } else if (fx === 'bokeh') {
       var colors = ['255,212,59', '255,146,43', '255,236,153', '255,169,77'];
-      particles(box, N(18), 'fx-bokeh', function (i) {
-        var s = rnd(40, 170).toFixed(0), c = colors[i % colors.length];
+      particles(box, N(12), 'fx-bokeh', function (i) {
+        var s = rnd(40, 160).toFixed(0), c = colors[i % colors.length];
         return 'left:' + rnd(-5, 95).toFixed(1) + '%;top:' + rnd(-5, 90).toFixed(1) + '%;width:' + s + 'px;height:' + s + 'px;background:radial-gradient(circle, rgba(' + c + ',' + rnd(0.25, 0.5).toFixed(2) + ') 0 55%, transparent 70%);' +
           '--dx:' + rnd(-6, 6).toFixed(1) + 'vw;--dy:' + rnd(-8, 8).toFixed(1) + 'vh;animation-duration:' + rnd(14, 30).toFixed(1) + 's;animation-delay:-' + rnd(0, 20).toFixed(1) + 's';
       });
     } else if (fx === 'lantern') {
-      particles(box, N(12), 'fx-lantern', function () {
+      particles(box, N(10), 'fx-lantern', function () {
         var w = rnd(14, 34);
         return 'left:' + rnd(2, 95).toFixed(1) + '%;width:' + w.toFixed(0) + 'px;height:' + (w * 1.3).toFixed(0) + 'px;animation-duration:' + rnd(16, 30).toFixed(1) + 's;animation-delay:-' + rnd(0, 30).toFixed(1) + 's;opacity:' + rnd(0.6, 1).toFixed(2);
       });
     } else if (fx === 'fireworks') {
       // Mỗi chùm pháo là 1 điểm, các tia toả đều quanh điểm đó; mỗi chùm nổ lệch nhịp nhau
       var palette = ['#ffd166', '#ef476f', '#06d6a0', '#118ab2', '#ffffff', '#ffd60a', '#ff8fab'];
-      for (var b = 0; b < N(7) || b < 3; b++) {
+      for (var b = 0; b < N(4) || b < 2; b++) {
         var burst = document.createElement('span');
         burst.className = 'fx-burst';
         burst.style.cssText = 'left:' + rnd(10, 90).toFixed(1) + '%;top:' + rnd(8, 55).toFixed(1) + '%';
         var color = palette[b % palette.length], delay = rnd(0, 4).toFixed(2), dur = rnd(2.2, 3.2).toFixed(2), r = rnd(70, 150).toFixed(0);
-        for (var s = 0; s < 16; s++) {
+        for (var s = 0; s < 12; s++) {
           var sp = document.createElement('i');
           sp.className = 'fx-spark';
-          sp.style.cssText = '--a:' + (s * 22.5) + 'deg;--c:' + color + ';--delay:' + delay + 's;--dur:' + dur + 's;--r:' + r + 'px';
+          sp.style.cssText = '--a:' + (s * 30) + 'deg;--c:' + color + ';--delay:' + delay + 's;--dur:' + dur + 's;--r:' + r + 'px';
           burst.appendChild(sp);
         }
         box.appendChild(burst);
       }
     } else if (fx === 'hearts') {
       var pinks = ['#ffccd5', '#ff8fa3', '#ffffff', '#ffb3c1'];
-      particles(box, N(16), 'fx-heart', function (i) {
-        var w = rnd(10, 26);
+      particles(box, N(12), 'fx-heart', function (i) {
+        var w = rnd(10, 24);
         return 'left:' + rnd(2, 95).toFixed(1) + '%;width:' + w.toFixed(0) + 'px;height:' + w.toFixed(0) + 'px;--c:' + pinks[i % pinks.length] + ';animation-duration:' + rnd(12, 24).toFixed(1) + 's;animation-delay:-' + rnd(0, 24).toFixed(1) + 's;opacity:' + rnd(0.45, 0.9).toFixed(2);
       });
       box.querySelectorAll('.fx-heart').forEach(function (h) { h.appendChild(document.createElement('i')); });
     } else if (fx === 'confetti') {
       var colors = ['#ffd43b', '#ff6b6b', '#4dabf7', '#69db7c', '#da77f2', '#ffa94d'];
-      particles(box, N(70), 'fx-conf', function (i) {
+      particles(box, N(35), 'fx-conf', function (i) {
         var w = rnd(5, 10);
         return 'left:' + pct() + ';width:' + w.toFixed(0) + 'px;height:' + (w * rnd(0.4, 0.7)).toFixed(0) + 'px;background:' + colors[i % colors.length] + ';animation-duration:' + rnd(6, 13).toFixed(1) + 's;animation-delay:-' + rnd(0, 13).toFixed(1) + 's';
       });
     } else if (fx === 'balloons') {
       var balloon = ['#ff6b6b', '#fcc419', '#4dabf7', '#b197fc', '#63e6be', '#ff8fab'];
-      particles(box, N(14), 'fx-balloon', function (i) {
-        var w = rnd(24, 46);
+      particles(box, N(10), 'fx-balloon', function (i) {
+        var w = rnd(24, 44);
         return 'left:' + rnd(2, 92).toFixed(1) + '%;width:' + w.toFixed(0) + 'px;height:' + (w * 1.2).toFixed(0) + 'px;--c:' + balloon[i % balloon.length] + ';animation-duration:' + rnd(14, 26).toFixed(1) + 's;animation-delay:-' + rnd(0, 26).toFixed(1) + 's;opacity:' + rnd(0.75, 0.95).toFixed(2);
       });
     } else if (fx === 'embers') {
-      particles(box, N(40), 'fx-ember', function () {
+      particles(box, N(22), 'fx-ember', function () {
         var s = rnd(2, 5).toFixed(1);
         return 'left:' + pct() + ';width:' + s + 'px;height:' + s + 'px;--dx:' + rnd(-6, 6).toFixed(1) + 'vw;animation-duration:' + rnd(5, 11).toFixed(1) + 's;animation-delay:-' + rnd(0, 11).toFixed(1) + 's';
       });

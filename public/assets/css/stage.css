@@ -13,6 +13,11 @@
 }
 .stage[hidden] { display: none; }
 body.stage-open { overflow: hidden; }
+body.stage-open .site-header,
+body.stage-open .layout,
+body.stage-open .site-footer {
+  display: none !important;
+}
 
 .stage-bg { position: absolute; inset: 0; background: var(--st-bg); background-size: var(--st-bg-size); }
 .fx { position: absolute; inset: 0; overflow: hidden; pointer-events: none; }
@@ -45,10 +50,10 @@ body.stage-open { overflow: hidden; }
 /* Phần giữa: đồng hồ */
 .stage-main { flex: 1; min-height: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2.5vmin; padding: 8px 16px; }
 .stage-dial { position: relative; display: grid; place-items: center; }
-.stage-ring { display: none; position: absolute; inset: 0; width: 100%; height: 100%; transform: rotate(-90deg); overflow: visible; }
+.stage-ring { display: none; position: absolute; inset: 0; width: 100%; height: 100%; transform: rotate(-90deg); overflow: visible; will-change: transform; }
 .stage-ring circle { fill: none; stroke-width: 5; }
 .stage-ring .sr-track { stroke: var(--st-track); }
-.stage-ring .sr-bar { stroke: url(#stGrad); stroke-linecap: round; stroke-dasharray: 628.32; transition: stroke-dashoffset .3s linear; filter: drop-shadow(0 0 6px color-mix(in srgb, var(--st-accent) 45%, transparent)); }
+.stage-ring .sr-bar { stroke: url(#stGrad); stroke-linecap: round; stroke-dasharray: 628.32; transition: stroke-dashoffset .3s linear; will-change: stroke-dashoffset; filter: drop-shadow(0 0 5px color-mix(in srgb, var(--st-accent) 45%, transparent)); }
 .stage-center { position: relative; display: flex; flex-direction: column; align-items: center; text-align: center; }
 
 .stage-time {
@@ -174,11 +179,18 @@ body.stage-open { overflow: hidden; }
 /* ---------- Hiệu ứng nền (fx) ---------- */
 /* glow: 2 đốm sáng trôi chậm */
 [data-fx="glow"] > .fx::before, [data-fx="glow"] > .fx::after {
-  content: ""; position: absolute; width: 60vmax; height: 60vmax; border-radius: 50%; filter: blur(60px); opacity: .35;
-  background: radial-gradient(circle, var(--st-accent2), transparent 65%);
-  left: -15%; top: 30%; animation: float-a 26s ease-in-out infinite alternate;
+  content: ""; position: absolute; width: 60vmax; height: 60vmax; border-radius: 50%; opacity: .35;
+  background: radial-gradient(circle, var(--st-accent2) 0%, color-mix(in srgb, var(--st-accent2) 65%, transparent) 25%, transparent 68%);
+  left: -15%; top: 30%;
+  will-change: transform; transform: translate3d(0, 0, 0);
+  animation: float-a 26s ease-in-out infinite alternate;
 }
-[data-fx="glow"] > .fx::after { background: radial-gradient(circle, var(--st-accent), transparent 65%); left: 55%; top: -25%; opacity: .22; animation-name: float-b; }
+[data-fx="glow"] > .fx::after {
+  background: radial-gradient(circle, var(--st-accent) 0%, color-mix(in srgb, var(--st-accent) 65%, transparent) 25%, transparent 68%);
+  left: 55%; top: -25%; opacity: .22;
+  will-change: transform; transform: translate3d(0, 0, 0);
+  animation-name: float-b;
+}
 @keyframes float-a { to { transform: translate(18%, -22%); } }
 @keyframes float-b { to { transform: translate(-20%, 25%); } }
 
@@ -201,9 +213,11 @@ body.stage-open { overflow: hidden; }
   content: ""; position: absolute; left: -30%; right: -30%; height: 70%; top: -12%;
   background: radial-gradient(ellipse 40% 50% at 30% 50%, color-mix(in srgb, var(--st-accent) 70%, transparent), transparent 70%),
               radial-gradient(ellipse 35% 45% at 70% 40%, color-mix(in srgb, var(--st-accent2) 65%, transparent), transparent 70%);
-  filter: blur(40px); opacity: .55; animation: aurora 18s ease-in-out infinite alternate;
+  filter: blur(16px); opacity: .55;
+  will-change: transform; transform: translate3d(0, 0, 0);
+  animation: aurora 18s ease-in-out infinite alternate;
 }
-[data-fx="aurora"] > .fx::after { top: 8%; opacity: .35; animation-duration: 26s; animation-direction: alternate-reverse; }
+[data-fx="aurora"] > .fx::after { top: 8%; opacity: .35; animation-duration: 26s; animation-direction: alternate-reverse; will-change: transform; transform: translate3d(0, 0, 0); }
 @keyframes aurora { 0% { transform: translateX(-8%) skewY(-6deg) scaleY(.9); } 100% { transform: translateX(8%) skewY(5deg) scaleY(1.15); } }
 
 /* waves: sóng dưới đáy */
@@ -251,7 +265,7 @@ body.stage-open { overflow: hidden; }
   animation: shoot 9s ease-in 3s infinite;
 }
 @keyframes shoot { 0% { transform: translate(0, 0) rotate(-28deg); opacity: 0; } 2% { opacity: 1; } 10%, 100% { transform: translate(-60vw, 30vh) rotate(-28deg); opacity: 0; } }
-.fx-star { position: absolute; border-radius: 50%; background: #fff; animation: twinkle ease-in-out infinite; }
+.fx-star { position: absolute; border-radius: 50%; background: #fff; animation: twinkle ease-in-out infinite; will-change: opacity; }
 @keyframes twinkle { 0%, 100% { opacity: .15; } 50% { opacity: 1; } }
 
 /* petals: cánh hoa rơi */
@@ -263,7 +277,7 @@ body.stage-open { overflow: hidden; }
 .stage[data-fx="petals"] > .fx::before { display: none; }
 .fx-petal {
   position: absolute; top: -5%; border-radius: 80% 0 80% 0; background: linear-gradient(135deg, #ffc9d7, #ff8fb1);
-  opacity: .85; animation: petal-fall linear infinite;
+  opacity: .85; animation: petal-fall linear infinite; will-change: transform;
 }
 @keyframes petal-fall {
   0% { transform: translate(0, 0) rotate(0); }
@@ -282,7 +296,7 @@ body.stage-open { overflow: hidden; }
 .fx-drop {
   position: absolute; top: -20%; width: 1.5px; border-radius: 2px;
   background: linear-gradient(transparent, rgba(200,225,255,.55)); transform: rotate(12deg);
-  animation: rain-fall linear infinite;
+  animation: rain-fall linear infinite; will-change: transform;
 }
 @keyframes rain-fall { to { transform: translate(-22vh, 130vh) rotate(12deg); } }
 
@@ -296,7 +310,7 @@ body.stage-open { overflow: hidden; }
 }
 .stage[data-fx="snow"] > .fx::before { display: none; }
 [data-fx="snow"] > .fx::after { content: ""; position: absolute; left: -5%; right: -5%; bottom: -6%; height: 16%; border-radius: 50% 50% 0 0; background: rgba(255,255,255,.9); filter: blur(6px); opacity: .55; }
-.fx-flake { position: absolute; top: -5%; border-radius: 50%; background: #fff; animation: snow-fall linear infinite; }
+.fx-flake { position: absolute; top: -5%; border-radius: 50%; background: #fff; animation: snow-fall linear infinite; will-change: transform; }
 @keyframes snow-fall {
   0% { transform: translate(0, 0); }
   50% { transform: translate(3vw, 55vh); }
@@ -328,7 +342,7 @@ body.stage-open { overflow: hidden; }
     radial-gradient(circle at 40% 75%, rgba(255,236,153,.3) 0 8%, transparent 9%), radial-gradient(circle at 86% 70%, rgba(255,212,59,.35) 0 5%, transparent 6%);
 }
 .stage[data-fx="bokeh"] > .fx::before { display: none; }
-.fx-bokeh { position: absolute; border-radius: 50%; filter: blur(3px); animation: bokeh-drift ease-in-out infinite alternate; }
+.fx-bokeh { position: absolute; border-radius: 50%; filter: blur(3px); animation: bokeh-drift ease-in-out infinite alternate; will-change: transform; }
 @keyframes bokeh-drift { to { transform: translate(var(--dx, 4vw), var(--dy, -6vh)) scale(1.15); } }
 
 /* led: lưới chấm như bảng điện tử */
@@ -355,7 +369,7 @@ body.stage-open { overflow: hidden; }
   background: radial-gradient(circle at 50% 50%, #e8590c 0 18%, #ffd43b 20% 60%, transparent 62%),
               radial-gradient(circle at 50% 0%, #ffd43b 0 30%, transparent 32%), radial-gradient(circle at 100% 50%, #ffd43b 0 30%, transparent 32%),
               radial-gradient(circle at 50% 100%, #ffd43b 0 30%, transparent 32%), radial-gradient(circle at 0% 50%, #ffd43b 0 30%, transparent 32%);
-  animation: petal-fall linear infinite;
+  animation: petal-fall linear infinite; will-change: transform;
 }
 
 /* lantern: trăng + đèn lồng bay lên (Trung thu) */
@@ -373,7 +387,7 @@ body.stage-open { overflow: hidden; }
 .fx-lantern {
   position: absolute; bottom: -12%; border-radius: 40% 40% 45% 45%;
   background: radial-gradient(circle at 50% 40%, #ffe066, #ff7b39 60%, #c92a2a);
-  box-shadow: 0 0 24px 6px rgba(255,140,60,.45); animation: lantern-rise linear infinite;
+  box-shadow: 0 0 24px 6px rgba(255,140,60,.45); animation: lantern-rise linear infinite; will-change: transform;
 }
 .fx-lantern::after { content: ""; position: absolute; left: 50%; bottom: -30%; width: 1px; height: 30%; background: rgba(255,224,138,.6); }
 @keyframes lantern-rise {
@@ -446,7 +460,7 @@ body.stage-open { overflow: hidden; }
 .fx-spark {
   position: absolute; left: -2px; top: -2px; width: 4px; height: 4px; border-radius: 50%;
   background: var(--c); box-shadow: 0 0 6px var(--c); opacity: 0;
-  animation: spark var(--dur, 2.6s) cubic-bezier(.1,.7,.3,1) infinite; animation-delay: var(--delay, 0s);
+  animation: spark var(--dur, 2.6s) cubic-bezier(.1,.7,.3,1) infinite; animation-delay: var(--delay, 0s); will-change: transform, opacity;
 }
 @keyframes spark {
   0% { transform: rotate(var(--a)) translateX(0); opacity: 1; }
@@ -461,7 +475,7 @@ body.stage-open { overflow: hidden; }
                     radial-gradient(6px 6px at 45% 50%, rgba(255,255,255,.5), transparent), radial-gradient(8px 8px at 85% 75%, rgba(255,204,213,.6), transparent);
 }
 .stage[data-fx="hearts"] > .fx::before { display: none; }
-.fx-heart { position: absolute; bottom: -10%; animation: lantern-rise linear infinite; }
+.fx-heart { position: absolute; bottom: -10%; animation: lantern-rise linear infinite; will-change: transform; }
 .fx-heart i { position: absolute; inset: 0; transform: rotate(-45deg); background: var(--c); }
 .fx-heart i::before, .fx-heart i::after { content: ""; position: absolute; width: 100%; height: 100%; border-radius: 50%; background: inherit; }
 .fx-heart i::before { top: -50%; left: 0; }
@@ -485,7 +499,7 @@ body.stage-open { overflow: hidden; }
     linear-gradient(#da77f2, #da77f2) 88% 28% / 6px 3px no-repeat, linear-gradient(#ffa94d, #ffa94d) 22% 82% / 6px 3px no-repeat;
 }
 .stage[data-fx="confetti"] > .fx::before { display: none; }
-.fx-conf { position: absolute; top: -5%; border-radius: 1px; animation: conf-fall linear infinite; }
+.fx-conf { position: absolute; top: -5%; border-radius: 1px; animation: conf-fall linear infinite; will-change: transform; }
 @keyframes conf-fall {
   0% { transform: translate(0, 0) rotateZ(0) rotateX(0); }
   50% { transform: translate(4vw, 55vh) rotateZ(240deg) rotateX(360deg); }
@@ -502,7 +516,7 @@ body.stage-open { overflow: hidden; }
 .fx-balloon {
   position: absolute; bottom: -15%; border-radius: 50% 50% 48% 48% / 55% 55% 45% 45%;
   background: radial-gradient(circle at 32% 30%, rgba(255,255,255,.55), transparent 28%), var(--c);
-  animation: lantern-rise linear infinite;
+  animation: lantern-rise linear infinite; will-change: transform;
 }
 .fx-balloon::after { content: ""; position: absolute; left: 50%; top: 100%; width: 1px; height: 60%; background: rgba(0,0,0,.25); }
 
@@ -514,7 +528,7 @@ body.stage-open { overflow: hidden; }
 }
 [data-fx="embers"] > .fx::after { content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 22%; background: linear-gradient(transparent, rgba(255,120,30,.18)); }
 .stage[data-fx="embers"] > .fx::before { display: none; }
-.fx-ember { position: absolute; bottom: -2%; border-radius: 50%; background: #ffa94d; box-shadow: 0 0 8px #ff922b; animation: ember-rise ease-out infinite; }
+.fx-ember { position: absolute; bottom: -2%; border-radius: 50%; background: #ffa94d; box-shadow: 0 0 8px #ff922b; animation: ember-rise ease-out infinite; will-change: transform; }
 @keyframes ember-rise {
   0% { transform: translate(0, 0); opacity: 0; }
   10% { opacity: 1; }

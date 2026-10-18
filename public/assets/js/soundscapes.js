@@ -232,7 +232,7 @@
     this.tone.connect(ctx.destination);
     // Vang (reverb) dựng bằng xung tiếng ồn tắt dần, dùng chung cho các bản nhạc
     this.wet = ctx.createConvolver();
-    this.wet.buffer = this.impulse(3.2);
+    this.wet.buffer = this.impulse(1.2);
     var wetGain = ctx.createGain();
     wetGain.gain.value = 0.5;
     this.wet.connect(wetGain);
@@ -328,10 +328,10 @@
     var next = ctx.currentTime + 0.1, stopped = false;
     function tick() {
       if (stopped) return;
-      var ahead = (typeof document !== 'undefined' && document.hidden) ? 2 : 0.35;
+      var ahead = (typeof document !== 'undefined' && document.hidden) ? 2 : 0.45;
       while (next < ctx.currentTime + ahead) next += step(next);
     }
-    var id = setInterval(tick, 50);
+    var id = setInterval(tick, 100);
     tick();
     return function () { stopped = true; clearInterval(id); };
   }

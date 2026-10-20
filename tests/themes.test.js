@@ -1,5 +1,7 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
+const fs = require('node:fs');
+const path = require('node:path');
 const TT = require('../public/assets/js/themes.js');
 
 test('mỗi nền có id riêng, tên, hạng hợp lệ và đủ màu cơ bản', () => {
@@ -17,10 +19,10 @@ test('mỗi nền có id riêng, tên, hạng hợp lệ và đủ màu cơ bả
 });
 
 test('có đủ nhóm nền: miễn phí, Pro, theo mùa; nền ảnh riêng nằm cuối', () => {
-  assert.ok(TT.list.length >= 25);
-  assert.ok(TT.list.filter((t) => t.tier === 'free').length >= 7);
+  assert.ok(TT.list.length >= 60);
+  assert.ok(TT.list.filter((t) => t.tier === 'free').length >= 11);
   const season = TT.list.filter((t) => t.season);
-  assert.ok(season.length >= 19);
+  assert.ok(season.length >= 27);
   for (const id of ['tet', 'trungthu', 'christmas', 'women83', 'women2010', 'nhagiao', 'quockhanh', 'valentine']) {
     assert.ok(season.some((t) => t.id === id), 'thiếu nền ' + id);
   }
@@ -31,6 +33,24 @@ test('có đủ nhóm nền: miễn phí, Pro, theo mùa; nền ảnh riêng n�
   }
   assert.equal(TT.list[TT.list.length - 1].id, 'photo');
   assert.match(TT.fontsUrl(), /Bebas\+Neue/);
+});
+
+test('mọi hiệu ứng (fx) mà nền dùng đều có CSS trong stage.css, mọi nền đều có nhạc gợi ý', () => {
+  const css = fs.readFileSync(path.join(__dirname, '..', 'public', 'assets', 'css', 'stage.css'), 'utf8');
+  for (const t of TT.list) {
+    if (t.fx && !t.photo) assert.ok(css.includes('[data-fx="' + t.fx + '"]'), t.id + ': thiếu CSS cho fx ' + t.fx);
+    assert.ok(t.music, t.id + ' thiếu nhạc');
+  }
+  const songs = new Set(require('../public/assets/js/soundscapes.js').list.map((s) => s.id));
+  for (const t of TT.list) assert.ok(songs.has(t.music), t.id + ': nhạc không tồn tại ' + t.music);
+});
+
+test('bộ nền mới: có cả nền miễn phí, Pro và ngày lễ', () => {
+  const fresh = TT.list.filter((t) => t.fresh);
+  assert.ok(fresh.length >= 20);
+  assert.ok(fresh.some((t) => t.tier === 'free'));
+  assert.ok(fresh.some((t) => t.tier === 'pro' && !t.season));
+  assert.ok(fresh.some((t) => t.season));
 });
 
 test('daysUntil: đếm tới ngày lễ dương lịch gần nhất, qua rồi thì sang năm sau', () => {

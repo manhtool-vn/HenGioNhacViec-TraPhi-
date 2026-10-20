@@ -343,6 +343,9 @@
     return new TextDecoder().decode(bytes);
   }
 
+  // Kiểu hiển thị toàn màn hình, đúng thứ tự nút trong bảng Giao diện
+  var STYLES = ['ring', 'bar', 'digits', 'flip', 'ticks', 'glass'];
+
   function encodeShare(cfg) {
     var o = {};
     if (cfg.plan) o.p = { s: cfg.plan.steps.map(function (s) { return [s.name, s.ms]; }), r: cfg.plan.repeat };
@@ -367,7 +370,7 @@
       cfg.ms = Math.min(MAX_MS, Math.max(0, Math.floor(Number(o.t) || 0)));
     }
     if (typeof o.h === 'string' && /^[a-z0-9-]{1,30}$/.test(o.h)) cfg.theme = o.h;
-    if (['ring', 'bar', 'digits', 'flip'].indexOf(o.y) !== -1) cfg.style = o.y;
+    if (STYLES.indexOf(o.y) !== -1) cfg.style = o.y;
     cfg.title = cleanText(o.n).slice(0, 80);
     if (!cfg.plan && !cfg.ms && !cfg.tasks.length) return null;
     return cfg;
@@ -377,7 +380,7 @@
     crossed: crossed, dayKey: dayKey, today: today, addRound: addRound, cleanHistory: cleanHistory, lastDays: lastDays,
     MAX_STEPS: MAX_STEPS, MAX_REPEAT: MAX_REPEAT, MAX_STEP_NAME: MAX_STEP_NAME,
     cleanPlan: cleanPlan, planTotal: planTotal, nextPos: nextPos, validPos: validPos, planLeft: planLeft,
-    parseDuration: parseDuration, msUntil: msUntil, parseClock: parseClock, suggestTimes: suggestTimes, encodeShare: encodeShare, decodeShare: decodeShare,
+    parseDuration: parseDuration, msUntil: msUntil, parseClock: parseClock, suggestTimes: suggestTimes, encodeShare: encodeShare, decodeShare: decodeShare, STYLES: STYLES,
     SEC: SEC, MIN: MIN, HOUR: HOUR, MAX_MS: MAX_MS, MAX_TASKS: MAX_TASKS, MAX_TASK_LEN: MAX_TASK_LEN,
     toMs: toMs, split: split, format: format, describe: describe,
     idle: idle, start: start, snooze: snooze, pause: pause, reset: reset, setDuration: setDuration,

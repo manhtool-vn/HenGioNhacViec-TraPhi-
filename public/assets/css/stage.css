@@ -148,7 +148,13 @@ body.stage-open .site-footer {
 .panel-toggles { display: flex; flex-direction: column; gap: 10px; }
 .stage-panel .opt { color: rgba(231,241,236,.85); }
 .stage-panel .switch { background: rgba(255,255,255,.2); }
+.stage-panel .panel-seg { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+@media (max-width: 400px) { .stage-panel .panel-seg { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 .stage-panel .theme-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.stage-panel .theme-filter { gap: 6px; margin-bottom: 12px; }
+.stage-panel .chip { height: 30px; padding: 0 10px; font-size: .8rem; color: rgba(231,241,236,.78); background: rgba(255,255,255,.06); border-color: rgba(255,255,255,.12); }
+.stage-panel .chip:hover { color: #fff; border-color: rgba(255,255,255,.28); }
+.stage-panel .theme-filter .chip[aria-pressed="true"] { color: #fff; background: rgba(18,184,134,.22); border-color: #12b886; }
 .stage-panel .tile-name { color: #e7f1ec; }
 .stage-panel .theme-tile[aria-pressed="true"] .tile-art { outline-color: #c4e43a; }
 
@@ -417,7 +423,8 @@ body.stage-open .site-footer {
 @keyframes flip { 0% { transform: rotateX(0); } 45% { transform: rotateX(-88deg); filter: brightness(.6); } 100% { transform: rotateX(0); } }
 
 /* ---------- Tối ưu: ô xem trước chỉ chạy hiệu ứng khi rê chuột / đang chọn ---------- */
-.tile-art, .tile-art > .fx::before, .tile-art > .fx::after { animation-play-state: paused; }
+/* Thêm .theme-tile để thắng các khai báo animation viết tắt ở phía dưới (viết tắt đặt lại play-state về running) */
+.theme-tile .tile-art, .theme-tile .tile-art > .fx::before, .theme-tile .tile-art > .fx::after { animation-play-state: paused; }
 .theme-tile:hover .tile-art, .theme-tile:hover .tile-art > .fx::before, .theme-tile:hover .tile-art > .fx::after,
 .theme-tile[aria-pressed="true"] .tile-art, .theme-tile[aria-pressed="true"] .tile-art > .fx::before, .theme-tile[aria-pressed="true"] .tile-art > .fx::after { animation-play-state: running; }
 .theme-tile[hidden] { display: none; }
@@ -573,6 +580,321 @@ body.stage-open .site-footer {
   background: #ffd60a; opacity: .16;
   clip-path: polygon(50% 0, 61.8% 35.5%, 100% 35.5%, 69% 57.5%, 80.9% 95%, 50% 72%, 19.1% 95%, 31% 57.5%, 0 35.5%, 38.2% 35.5%);
 }
+
+/* =========================================================
+   Bộ nền 2026
+   Chỉ dùng transform / opacity cho phần chuyển động để trình duyệt giao cho GPU, không vẽ lại từng khung.
+   Hiệu ứng cần hạt: ::before là bản tĩnh cho ô xem trước, khung toàn màn hình ẩn đi và dùng hạt do JS sinh.
+   ========================================================= */
+
+/* clouds: mây trôi ngang (2 tầng, tầng dưới chậm hơn) */
+[data-fx="clouds"] > .fx::before, [data-fx="clouds"] > .fx::after {
+  content: ""; position: absolute; left: 0; top: 5%; width: 200%; height: 34%;
+  background:
+    radial-gradient(ellipse 7% 30% at 12% 62%, #fff 50%, rgba(255,255,255,0) 72%), radial-gradient(ellipse 5% 26% at 17% 46%, #fff 50%, rgba(255,255,255,0) 72%),
+    radial-gradient(ellipse 6% 22% at 21% 64%, #fff 50%, rgba(255,255,255,0) 72%), radial-gradient(ellipse 8% 28% at 58% 58%, #fff 50%, rgba(255,255,255,0) 72%),
+    radial-gradient(ellipse 6% 30% at 63% 42%, #fff 50%, rgba(255,255,255,0) 72%), radial-gradient(ellipse 7% 22% at 69% 60%, #fff 50%, rgba(255,255,255,0) 72%);
+  background-size: 50% 100%; background-repeat: repeat-x; opacity: .9;
+  animation: drift-x 140s linear infinite;
+}
+[data-fx="clouds"] > .fx::after {
+  top: auto; bottom: 2%; height: 30%; opacity: .7; animation-duration: 210s;
+  background:
+    radial-gradient(ellipse 10% 34% at 30% 60%, #fff 50%, rgba(255,255,255,0) 72%), radial-gradient(ellipse 7% 30% at 36% 44%, #fff 50%, rgba(255,255,255,0) 72%),
+    radial-gradient(ellipse 9% 26% at 42% 62%, #fff 50%, rgba(255,255,255,0) 72%), radial-gradient(ellipse 8% 28% at 84% 56%, #fff 50%, rgba(255,255,255,0) 72%),
+    radial-gradient(ellipse 6% 24% at 89% 44%, #fff 50%, rgba(255,255,255,0) 72%);
+  background-size: 50% 100%; background-repeat: repeat-x;
+}
+@keyframes drift-x { to { transform: translate3d(-50%, 0, 0); } }
+
+/* mesh: 2 mảng màu lớn lượn chậm, hòa vào nhau như lụa */
+[data-fx="mesh"] > .fx::before, [data-fx="mesh"] > .fx::after {
+  content: ""; position: absolute; width: 85%; aspect-ratio: 1; border-radius: 50%; left: -25%; top: -45%;
+  background: radial-gradient(circle, color-mix(in srgb, var(--st-accent) 55%, transparent) 0%, color-mix(in srgb, var(--st-accent) 20%, transparent) 40%, transparent 68%);
+  animation: mesh-a 24s ease-in-out infinite alternate;
+}
+[data-fx="mesh"] > .fx::after {
+  left: 45%; top: 15%;
+  background: radial-gradient(circle, color-mix(in srgb, var(--st-accent2) 55%, transparent) 0%, color-mix(in srgb, var(--st-accent2) 20%, transparent) 40%, transparent 68%);
+  animation-name: mesh-b; animation-duration: 30s;
+}
+@keyframes mesh-a { 50% { transform: translate(30%, 25%) scale(1.15); } 100% { transform: translate(12%, 50%) scale(.9); } }
+@keyframes mesh-b { 50% { transform: translate(-35%, -15%) scale(.85); } 100% { transform: translate(-10%, -45%) scale(1.1); } }
+
+/* rays: tia nắng xoay chậm từ góc trên */
+[data-fx="rays"] > .fx::before {
+  content: ""; position: absolute; left: 12%; top: 0; width: 260%; aspect-ratio: 1;
+  background: repeating-conic-gradient(rgba(255,255,255,.4) 0 5deg, rgba(255,255,255,0) 5deg 15deg);
+  -webkit-mask-image: radial-gradient(circle, #000 0%, rgba(0,0,0,.4) 22%, transparent 45%); mask-image: radial-gradient(circle, #000 0%, rgba(0,0,0,.4) 22%, transparent 45%);
+  transform: translate(-50%, -50%); animation: spin-c 120s linear infinite;
+}
+[data-fx="rays"] > .fx::after { content: ""; position: absolute; inset: 0; background: radial-gradient(circle at 12% 0%, rgba(255,255,240,.85), transparent 28%); }
+@keyframes spin-c { from { transform: translate(-50%, -50%) rotate(0); } to { transform: translate(-50%, -50%) rotate(360deg); } }
+
+/* galaxy: tinh vân xoáy nghiêng + lõi sáng; sao lấp lánh do JS sinh */
+[data-fx="galaxy"] > .fx::before {
+  content: ""; position: absolute; left: 50%; top: 50%; width: min(140vmin, 130%); aspect-ratio: 1; border-radius: 50%;
+  background: conic-gradient(from 0deg, transparent, color-mix(in srgb, var(--st-accent) 55%, transparent) 8%, transparent 22%,
+    color-mix(in srgb, var(--st-accent2) 50%, transparent) 33%, transparent 47%, color-mix(in srgb, var(--st-accent) 55%, transparent) 58%,
+    transparent 72%, color-mix(in srgb, var(--st-accent2) 50%, transparent) 83%, transparent 97%);
+  -webkit-mask-image: radial-gradient(circle, rgba(0,0,0,.9) 0 6%, rgba(0,0,0,.55) 28%, transparent 66%); mask-image: radial-gradient(circle, rgba(0,0,0,.9) 0 6%, rgba(0,0,0,.55) 28%, transparent 66%);
+  opacity: .75; transform: translate(-50%, -50%) rotate(-24deg) scaleY(.48) rotate(0);
+  animation: galaxy-spin 160s linear infinite;
+}
+[data-fx="galaxy"] > .fx::after {
+  content: ""; position: absolute; left: 50%; top: 50%; width: min(60vmin, 55%); aspect-ratio: 1; border-radius: 50%; transform: translate(-50%, -50%) scaleY(.6) rotate(-24deg);
+  background: radial-gradient(circle, rgba(255,236,255,.32), color-mix(in srgb, var(--st-accent) 18%, transparent) 30%, transparent 62%);
+}
+@keyframes galaxy-spin { to { transform: translate(-50%, -50%) rotate(-24deg) scaleY(.48) rotate(360deg); } }
+
+/* fireflies: rặng cây tối dưới đáy + đom đóm bay lượn (JS) */
+[data-fx="fireflies"] > .fx::before {
+  content: ""; position: absolute; inset: 0;
+  background-image: radial-gradient(3px 3px at 18% 42%, #eaff8f, transparent), radial-gradient(4px 4px at 36% 66%, #d8f36a, transparent),
+                    radial-gradient(3px 3px at 62% 38%, #eaff8f, transparent), radial-gradient(4px 4px at 80% 60%, #d8f36a, transparent),
+                    radial-gradient(3px 3px at 50% 78%, #eaff8f, transparent);
+}
+.stage[data-fx="fireflies"] > .fx::before { display: none; }
+[data-fx="fireflies"] > .fx::after {
+  content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 24%;
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 800 160' preserveAspectRatio='none'%3E%3Cpath d='M0 160V112Q40 74 80 104Q112 64 150 100L170 34L190 100Q240 80 280 110Q330 70 380 104L400 26L420 104Q470 84 520 110Q570 74 620 100L640 46L660 100Q720 80 760 106L780 60L800 104V160Z' fill='%23030b07'/%3E%3C/svg%3E") bottom / 100% 100% no-repeat;
+}
+.fx-fly {
+  position: absolute; border-radius: 50%; background: #f1ffa6; box-shadow: 0 0 8px 3px rgba(216,243,106,.75);
+  animation-name: fly-move, fly-blink; animation-timing-function: ease-in-out; animation-iteration-count: infinite; animation-direction: alternate, normal;
+  will-change: transform, opacity;
+}
+@keyframes fly-move {
+  0% { transform: translate(0, 0); }
+  33% { transform: translate(var(--x1), var(--y1)); }
+  66% { transform: translate(var(--x2), var(--y2)); }
+  100% { transform: translate(var(--x3), var(--y3)); }
+}
+@keyframes fly-blink { 0%, 100% { opacity: .08; } 45%, 60% { opacity: 1; } }
+
+/* matrix: cột ký tự rơi (JS); ô xem trước dùng vệt dọc tĩnh */
+[data-fx="matrix"] > .fx::before {
+  content: ""; position: absolute; inset: 0;
+  background: repeating-linear-gradient(90deg, transparent 0 14px, rgba(0,255,102,.22) 14px 16px, transparent 16px 31px, rgba(0,255,102,.1) 31px 32px);
+  -webkit-mask-image: linear-gradient(170deg, transparent 5%, #000 40%, transparent 60%, #000 85%); mask-image: linear-gradient(170deg, transparent 5%, #000 40%, transparent 60%, #000 85%);
+}
+.stage[data-fx="matrix"] > .fx::before { display: none; }
+.fx-col {
+  position: absolute; top: 0; font-family: var(--st-font); font-weight: 700; line-height: 1.15;
+  writing-mode: vertical-rl; text-orientation: upright; white-space: nowrap;
+  color: #4dff8f; text-shadow: 0 0 6px rgba(0,255,102,.7);
+  -webkit-mask-image: linear-gradient(to bottom, transparent, #000 75%); mask-image: linear-gradient(to bottom, transparent, #000 75%);
+  animation: col-fall linear infinite; will-change: transform;
+}
+@keyframes col-fall { from { transform: translateY(-100%); } to { transform: translateY(110vh); } }
+
+/* deepsea: tia sáng chiếu xuống lay động + bọt nước nổi lên (JS) */
+[data-fx="deepsea"] > .fx::before {
+  content: ""; position: absolute; left: -15%; right: -15%; top: -5%; height: 85%; transform-origin: 50% 0;
+  background: repeating-linear-gradient(98deg, transparent 0 5%, rgba(190,240,255,.11) 5% 8%, transparent 8% 13%, rgba(190,240,255,.06) 13% 14.5%);
+  -webkit-mask-image: linear-gradient(to bottom, #000, transparent); mask-image: linear-gradient(to bottom, #000, transparent);
+  animation: sway 11s ease-in-out infinite alternate;
+}
+[data-fx="deepsea"] > .fx::after {
+  content: ""; position: absolute; inset: 0;
+  background: radial-gradient(4px 4px at 22% 72%, rgba(220,250,255,.7), transparent), radial-gradient(6px 6px at 30% 58%, rgba(220,250,255,.5), transparent),
+              radial-gradient(5px 5px at 76% 66%, rgba(220,250,255,.6), transparent), radial-gradient(3px 3px at 70% 44%, rgba(220,250,255,.6), transparent),
+              linear-gradient(transparent 75%, rgba(0,8,16,.55));
+}
+.stage[data-fx="deepsea"] > .fx::after { background: linear-gradient(transparent 75%, rgba(0,8,16,.55)); }
+@keyframes sway { from { transform: skewX(-7deg); } to { transform: skewX(7deg); } }
+.fx-bubble {
+  position: absolute; bottom: -4%; border-radius: 50%; border: 1px solid rgba(210,248,255,.55);
+  background: radial-gradient(circle at 34% 30%, rgba(255,255,255,.7), rgba(255,255,255,.08) 40%, transparent 70%);
+  animation: bubble-rise linear infinite; will-change: transform, opacity;
+}
+@keyframes bubble-rise {
+  0% { transform: translate(0, 0); opacity: 0; }
+  8% { opacity: .9; }
+  25% { transform: translate(var(--dx), -28vh); }
+  50% { transform: translate(0, -56vh); }
+  75% { transform: translate(var(--dx), -84vh); }
+  88% { opacity: .9; }
+  100% { transform: translate(0, -112vh); opacity: 0; }
+}
+
+/* lava: khối dung nham trôi lên xuống như đèn lava (JS) + ánh nóng hai đầu */
+[data-fx="lava"] > .fx::before {
+  content: ""; position: absolute; inset: 0;
+  background: radial-gradient(circle at 22% 70%, #ff9a5c 0 9%, rgba(255,94,98,.6) 12%, transparent 16%),
+              radial-gradient(circle at 70% 30%, #ffc078 0 6%, rgba(255,94,98,.55) 9%, transparent 13%),
+              radial-gradient(circle at 82% 78%, #ff8a5c 0 5%, rgba(214,47,107,.55) 8%, transparent 11%);
+}
+.stage[data-fx="lava"] > .fx::before { display: none; }
+[data-fx="lava"] > .fx::after {
+  content: ""; position: absolute; inset: 0;
+  background: radial-gradient(70% 30% at 50% 108%, rgba(255,140,60,.5), transparent 70%), radial-gradient(55% 22% at 50% -6%, rgba(255,80,120,.32), transparent 70%);
+}
+.fx-blob {
+  position: absolute; border-radius: 50%; opacity: .62;
+  background: radial-gradient(circle at 40% 35%, var(--c1), var(--c2) 58%, color-mix(in srgb, var(--c2) 40%, transparent) 66%, transparent 71%);
+  animation: lava-move ease-in-out infinite alternate; will-change: transform;
+}
+@keyframes lava-move {
+  0% { transform: translate(0, 0) scale(1, 1); }
+  50% { transform: translate(var(--dx), calc(var(--dy) * .5)) scale(.9, 1.12); }
+  100% { transform: translate(0, var(--dy)) scale(1.08, .94); }
+}
+
+/* warp: vệt sao lao ra từ tâm (JS); ô xem trước là các tia tĩnh */
+[data-fx="warp"] > .fx::before {
+  content: ""; position: absolute; inset: 0;
+  background: repeating-conic-gradient(from 3deg at 50% 50%, rgba(220,235,255,.35) 0 .5deg, transparent .5deg 7deg);
+  -webkit-mask-image: radial-gradient(circle, transparent 14%, #000 70%); mask-image: radial-gradient(circle, transparent 14%, #000 70%);
+}
+.stage[data-fx="warp"] > .fx::before { display: none; }
+[data-fx="warp"] > .fx::after { content: ""; position: absolute; inset: 0; background: radial-gradient(circle at 50% 50%, color-mix(in srgb, var(--st-accent) 22%, transparent), transparent 38%); }
+.fx-streak {
+  position: absolute; left: 50%; top: 50%; width: var(--l); height: 2px; border-radius: 2px; transform-origin: 0 50%;
+  background: linear-gradient(90deg, transparent, var(--c)); opacity: 0;
+  animation: warp-fly linear infinite; will-change: transform, opacity;
+}
+@keyframes warp-fly {
+  0% { transform: rotate(var(--a)) translateX(var(--r0)) scaleX(.1); opacity: 0; }
+  25% { opacity: 1; }
+  100% { transform: rotate(var(--a)) translateX(80vmax) scaleX(1.6); opacity: 1; }
+}
+
+/* mountains: 3 lớp núi + sương trôi */
+[data-fx="mountains"] > .fx::before {
+  content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 100%;
+  background:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1000 200' preserveAspectRatio='none'%3E%3Cpath d='M0 200V160Q100 118 200 150T400 142T600 156T800 138T1000 150V200Z' fill='%23231a40'/%3E%3C/svg%3E") bottom / 100% 26% no-repeat,
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1000 200' preserveAspectRatio='none'%3E%3Cpath d='M0 200V140L120 88L220 128L330 76L430 134L540 92L640 140L760 82L880 128L1000 96V200Z' fill='%23463569'/%3E%3C/svg%3E") bottom / 100% 40% no-repeat,
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1000 200' preserveAspectRatio='none'%3E%3Cpath d='M0 200V120L80 70L160 108L260 38L360 98L450 58L560 118L650 46L760 104L850 62L1000 108V200Z' fill='%23705189' fill-opacity='.85'/%3E%3C/svg%3E") bottom / 100% 54% no-repeat;
+}
+[data-fx="mountains"] > .fx::after {
+  content: ""; position: absolute; left: 0; bottom: 12%; width: 200%; height: 30%;
+  background: radial-gradient(ellipse 30% 40% at 25% 50%, rgba(255,240,245,.32), transparent 70%), radial-gradient(ellipse 34% 36% at 75% 60%, rgba(255,240,245,.26), transparent 70%);
+  background-size: 50% 100%; background-repeat: repeat-x;
+  animation: drift-x 90s linear infinite;
+}
+
+/* hoian: mái phố cổ dưới đáy + đèn lồng treo đung đưa (JS) */
+[data-fx="hoian"] > .fx::before {
+  content: ""; position: absolute; inset: 0;
+  background: radial-gradient(9px 11px at 14% 22%, #e03131 70%, transparent 74%), radial-gradient(8px 10px at 34% 34%, #f59f00 70%, transparent 74%),
+              radial-gradient(10px 12px at 58% 18%, #e8590c 70%, transparent 74%), radial-gradient(8px 10px at 80% 30%, #c2255c 70%, transparent 74%),
+              linear-gradient(rgba(255,220,170,.5), rgba(255,220,170,.5)) 14% 0 / 1px 19% no-repeat, linear-gradient(rgba(255,220,170,.5), rgba(255,220,170,.5)) 34% 0 / 1px 31% no-repeat,
+              linear-gradient(rgba(255,220,170,.5), rgba(255,220,170,.5)) 58% 0 / 1px 15% no-repeat, linear-gradient(rgba(255,220,170,.5), rgba(255,220,170,.5)) 80% 0 / 1px 27% no-repeat;
+}
+.stage[data-fx="hoian"] > .fx::before { display: none; }
+[data-fx="hoian"] > .fx::after {
+  content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 20%;
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1000 200' preserveAspectRatio='none'%3E%3Cpath d='M0 200V138L30 128L50 112L130 112L150 128L180 138V104L210 94L230 76L320 76L340 94L370 104V132L400 122L420 108L500 108L520 122L550 132V96L580 84L600 64L700 64L720 84L750 96V136L780 126L800 112L880 112L900 126L930 136V108L960 98L1000 90V200Z' fill='%23180812'/%3E%3C/svg%3E") bottom / 100% 100% no-repeat;
+}
+.fx-hang { position: absolute; top: -1%; width: var(--w); transform-origin: 50% 0; animation: swing ease-in-out infinite alternate; will-change: transform; }
+.fx-hang::before { content: ""; position: absolute; left: 50%; top: 0; bottom: calc(var(--w) * 1.2); width: 1px; background: rgba(255,220,170,.55); }
+.fx-hang::after {
+  content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: calc(var(--w) * 1.25); border-radius: 46% / 50%;
+  background: repeating-linear-gradient(90deg, transparent 0 21%, rgba(0,0,0,.14) 21% 24%), radial-gradient(circle at 50% 45%, #fff3c4 0%, var(--c) 46%, color-mix(in srgb, var(--c) 55%, #000) 100%);
+  box-shadow: 0 0 calc(var(--w) * .9) calc(var(--w) * .15) color-mix(in srgb, var(--c) 55%, transparent);
+}
+@keyframes swing { from { transform: rotate(-5deg); } to { transform: rotate(5deg); } }
+
+/* storm: tia chớp lóe 2 lần mỗi chu kỳ + mưa (JS). Độ trễ âm để ô xem trước dừng đúng lúc chớp. */
+[data-fx="storm"] > .fx::before {
+  content: ""; position: absolute; left: 70%; top: 0; width: min(14vmin, 16%); height: 52%;
+  background: linear-gradient(#ffffff, #c7d2fe);
+  clip-path: polygon(46% 0, 72% 0, 54% 38%, 80% 38%, 30% 100%, 44% 54%, 20% 54%);
+  opacity: 0; animation: bolt 9s linear -5.6s infinite;
+}
+[data-fx="storm"] > .fx::after {
+  content: ""; position: absolute; inset: 0; background: radial-gradient(circle at 75% 15%, rgba(220,228,255,.7), rgba(200,210,255,.18) 50%, transparent 80%);
+  opacity: 0; animation: flash 9s linear -5.6s infinite;
+}
+@keyframes bolt { 0%, 60%, 63.5%, 65%, 68%, 100% { opacity: 0; } 61%, 66% { opacity: .95; } }
+@keyframes flash { 0%, 60%, 63%, 65%, 68%, 100% { opacity: 0; } 61%, 66% { opacity: .6; } }
+
+/* concert: 2 đèn rọi quét qua lại + cột sóng nhạc (JS) */
+[data-fx="concert"] > .fx::before, [data-fx="concert"] > .fx::after {
+  content: ""; position: absolute; top: -8%; left: 16%; width: 34vmin; height: 125%; transform-origin: 50% 0;
+  background: linear-gradient(to bottom, color-mix(in srgb, var(--st-accent2) 55%, transparent), transparent 85%);
+  clip-path: polygon(44% 0, 56% 0, 100% 100%, 0 100%); opacity: .45;
+  animation: beam 7s ease-in-out infinite alternate;
+}
+[data-fx="concert"] > .fx::after {
+  left: auto; right: 16%;
+  background: linear-gradient(to bottom, color-mix(in srgb, var(--st-accent) 55%, transparent), transparent 85%);
+  animation-duration: 9s; animation-direction: alternate-reverse;
+}
+.tile-art[data-fx="concert"] > .fx::before, .tile-art[data-fx="concert"] > .fx::after { width: 40%; }
+@keyframes beam { from { transform: rotate(-20deg); } to { transform: rotate(16deg); } }
+.fx-eq {
+  position: absolute; bottom: 0; border-radius: 3px 3px 0 0; transform-origin: 50% 100%; opacity: .5;
+  background: linear-gradient(to top, var(--st-accent2), var(--st-accent));
+  animation: eq ease-in-out infinite alternate; will-change: transform;
+}
+@keyframes eq { from { transform: scaleY(.12); } to { transform: scaleY(1); } }
+
+/* holo: ánh ngũ sắc xoay chậm + vệt bóng loáng lướt qua */
+[data-fx="holo"] > .fx::before {
+  content: ""; position: absolute; left: 50%; top: 50%; width: 250%; aspect-ratio: 1;
+  background: conic-gradient(#ffd1f7, #c9b6ff, #a8e6ff, #b9ffd9, #fff2b3, #ffd1f7);
+  opacity: .55; transform: translate(-50%, -50%); animation: spin-c 45s linear infinite;
+}
+[data-fx="holo"] > .fx::after {
+  content: ""; position: absolute; left: 0; top: -20%; bottom: -20%; width: 40%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,.5), transparent);
+  transform: translateX(80%) skewX(-20deg); animation: shine 8s ease-in-out infinite;
+}
+@keyframes shine { 0% { transform: translateX(-130%) skewX(-20deg); } 55%, 100% { transform: translateX(330%) skewX(-20deg); } }
+
+/* leaves: lá thu rơi (dùng chung chuyển động cánh hoa) */
+[data-fx="leaves"] > .fx::before {
+  content: ""; position: absolute; inset: 0;
+  background: radial-gradient(8px 5px at 18% 28%, #ffb347, transparent), radial-gradient(7px 5px at 66% 20%, #e8590c, transparent),
+              radial-gradient(8px 5px at 42% 74%, #ffd43b, transparent), radial-gradient(7px 5px at 86% 62%, #c92a2a, transparent);
+}
+.stage[data-fx="leaves"] > .fx::before { display: none; }
+.fx-leaf {
+  position: absolute; top: -5%; border-radius: 0 85% 0 85%;
+  background: linear-gradient(135deg, var(--c), color-mix(in srgb, var(--c) 55%, #4a1800));
+  animation: petal-fall linear infinite; will-change: transform;
+}
+.fx-leaf::after { content: ""; position: absolute; left: 10%; right: 10%; top: 50%; height: 1px; background: rgba(60,20,0,.35); transform: rotate(-35deg); }
+
+/* sparkle: ánh kim tuyến 4 cánh lấp lánh (JS) */
+[data-fx="sparkle"] > .fx::before {
+  content: ""; position: absolute; inset: 0;
+  background: radial-gradient(3px 3px at 16% 24%, #fff, transparent), radial-gradient(4px 4px at 78% 18%, var(--st-accent), transparent),
+              radial-gradient(3px 3px at 30% 78%, var(--st-accent), transparent), radial-gradient(4px 4px at 86% 72%, #fff, transparent),
+              radial-gradient(3px 3px at 56% 12%, #fff, transparent);
+}
+.stage[data-fx="sparkle"] > .fx::before { display: none; }
+.fx-spk {
+  position: absolute; aspect-ratio: 1; background: var(--c);
+  clip-path: polygon(50% 0, 59% 41%, 100% 50%, 59% 59%, 50% 100%, 41% 59%, 0 50%, 41% 41%);
+  transform: scale(0); animation: spk ease-in-out infinite; will-change: transform, opacity;
+}
+@keyframes spk { 0%, 100% { transform: scale(0) rotate(0); opacity: 0; } 50% { transform: scale(1) rotate(90deg); opacity: 1; } }
+
+/* ---------- Kiểu "Vạch chia": vòng tròn chia 60 vạch, vạch 5 phút dài hơn ---------- */
+.stage[data-style="ticks"] .stage-dial { --dial: min(74vmin, 92vw, calc(100vh - 240px - var(--dial-cut, 0px))); width: var(--dial); aspect-ratio: 1; }
+.stage[data-style="ticks"] .stage-ring { display: block; }
+.stage[data-style="ticks"] .stage-ring circle { stroke-width: 18; }
+.stage[data-style="ticks"] .sr-track, .stage[data-style="ticks"] .sr-bar { mask: url(#stTicks); }
+.stage[data-style="ticks"] .sr-bar { stroke-linecap: butt; filter: none; }
+.stage[data-style="ticks"] .stage-time { font-size: calc(var(--dial) * .2); }
+.stage[data-style="ticks"] .stage-time.is-long { font-size: calc(var(--dial) * .145); }
+.stage[data-style="ticks"] .stage-sub { font-size: max(.95rem, calc(var(--dial) * .035)); }
+
+/* ---------- Kiểu "Thẻ kính": số nằm trên tấm kính mờ, thanh tiến độ bên dưới ---------- */
+.stage[data-style="glass"] .stage-dial {
+  padding: 3.6vmin 6vmin 3.2vmin; border-radius: 4vmin;
+  background: color-mix(in srgb, var(--st-text) 6%, rgba(255,255,255,.1));
+  border: 1px solid color-mix(in srgb, var(--st-text) 16%, rgba(255,255,255,.2));
+  box-shadow: 0 30px 80px -30px rgba(0,0,0,.45), inset 0 1px 0 rgba(255,255,255,.25);
+  -webkit-backdrop-filter: blur(14px) saturate(1.3); backdrop-filter: blur(14px) saturate(1.3);
+}
+.stage[data-style="glass"] .stage-time { font-size: min(24vmin, 17vw); }
+.stage[data-style="glass"] .stage-time.is-long { font-size: min(17vmin, 12vw); }
+.stage[data-style="glass"] .stage-bar { display: block; width: min(56vw, 720px); }
 
 /* Nhãn ngày lễ trên ô xem trước */
 .tile-date {

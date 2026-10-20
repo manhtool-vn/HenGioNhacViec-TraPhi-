@@ -17,7 +17,7 @@ public/                     TOÀN BỘ những gì được phục vụ ra ngoà
   assets/js/
     boot.js                 áp nền sáng/tối sớm (thay cho script inline)
     timer-core.js           lõi đồng hồ, chuỗi bước, lịch sử, liên kết chia sẻ (thuần, chạy được trong Node)
-    themes.js               dữ liệu 41 nền (7 miễn phí, 34 Pro, trong đó 19 nền ngày lễ có ngày diễn ra)
+    themes.js               dữ liệu 65 nền (11 miễn phí, 54 Pro, trong đó 27 nền ngày lễ & dịp đặc biệt)
     sounds.js, pip.js       chuông Web Audio, cửa sổ nổi
     app.js                  giao diện hẹn giờ
     api.js                  gọi API, tự làm mới token khi hết hạn
@@ -62,7 +62,7 @@ data/                       dữ liệu chạy thật (KHÔNG đưa lên git, nh
 | Gói | Giá | Gồm |
 |---|---|---|
 | Nền lẻ | 9.000đ | 1 nền Pro, dùng mãi mãi |
-| Gói Lễ, Tết cả năm | 29.000đ | 19 nền ngày lễ: Tết, 8/3, 30/4, 1/6, 2/9, 20/10, 20/11, Noel… |
+| Gói Lễ, Tết cả năm | 29.000đ | 27 nền ngày lễ & dịp đặc biệt: Tết, Giao thừa, 8/3, 30/4, 1/6, 2/9, 20/10, 11.11, 20/11, Noel, Lễ cưới, Khai trương… |
 | Gói Pro trọn đời | 49.000đ | Tất cả nền Pro hiện có + nền ra mắt sau này + ảnh của bạn |
 
 Giá thấp, mua 1 lần, không gia hạn, để người dùng dễ quyết định; gói Pro rẻ hơn mua lẻ 6 nền nên đa số sẽ chọn Pro.
@@ -125,7 +125,7 @@ Khuyên dùng: tạo **dự án Google Cloud riêng tên ManhTool** với OAuth 
 - **Chuỗi nhiều bước** (Pomodoro, 52/17, HIIT 40/20, Thuyết trình, Làm bài kiểm tra), lặp N vòng, phím `N` sang bước tiếp.
 - Danh sách việc (thêm, sửa, kéo sắp xếp, xóa có hoàn tác) và 4 mẫu. Hết giờ thì nhắc **cả danh sách** (tick từng việc) hoặc **chọn ngẫu nhiên 1 việc**.
 - 4 kiểu chuông + âm lượng, đọc to bằng giọng tiếng Việt, báo trước 1/2/5 phút, tự đếm lại, báo lại sau 5 phút, thông báo hệ thống, rung, giữ màn hình sáng.
-- **Toàn màn hình** (phím `F`): 4 kiểu hiển thị (vòng tròn, thanh ngang, chỉ số, lật số), tiêu đề màn hình lớn, 25 nền có lọc Miễn phí / Pro / Theo mùa (Tết, Trung thu, Giáng sinh), ảnh của bạn, phím `T` đổi nền. Ô xem trước chỉ chạy hiệu ứng khi rê chuột cho nhẹ máy. **Cửa sổ nổi** (phím `P`).
+- **Toàn màn hình** (phím `F`): 6 kiểu hiển thị (vòng tròn, thanh ngang, chỉ số, lật số, vạch chia, thẻ kính), tiêu đề màn hình lớn, 65 nền có lọc Mới / Miễn phí / Pro / Ngày lễ (lọc được cả trong bảng Giao diện ở toàn màn hình), ảnh của bạn, phím `T` đổi nền. Ô xem trước chỉ chạy hiệu ứng khi rê chuột cho nhẹ máy. **Cửa sổ nổi** (phím `P`).
 - Hẹn giờ đã lưu, **chia sẻ liên kết** `?p=…`, biểu đồ 7 ngày, cài như ứng dụng (PWA). Đổi `VERSION` trong `public/sw.js` mỗi lần phát hành.
 
 ### Dễ dùng
@@ -137,7 +137,9 @@ Khuyên dùng: tạo **dự án Google Cloud riêng tên ManhTool** với OAuth 
 - **Trình đọc màn hình**: đọc "Còn N phút", sang bước mới, hết giờ và việc cần làm.
 
 ### Thêm nền mới
-Thêm 1 phần tử vào `THEMES` trong `public/assets/js/themes.js`. Hiệu ứng mới: thêm khối `[data-fx="ten"] > .fx::before/::after` trong `stage.css`; cần nhiều hạt (sao, cánh hoa) thì sinh trong `buildFx()` ở `app.js`.
+Thêm 1 phần tử vào `THEMES` trong `public/assets/js/themes.js` (kèm nhạc gợi ý trong `MUSIC`). Hiệu ứng mới: thêm khối `[data-fx="ten"] > .fx::before/::after` trong `stage.css`; cần nhiều hạt (sao, cánh hoa) thì sinh trong `buildFx()` ở `app.js`, và để `::before` làm bản tĩnh cho ô xem trước. Kiểm thử báo lỗi nếu nền dùng fx chưa có CSS.
+- `fresh: true` đưa nền vào bộ lọc "Mới"; đợt sau thì bỏ cờ này ở đợt cũ.
+- Chuyển động chỉ dùng `transform` / `opacity` (GPU lo, không vẽ lại từng khung). Không đặt `filter: blur` lên phần tử đang chuyển động.
 
 ## Ghi chú kỹ thuật
 - Đồng hồ tính theo mốc kết thúc `endAt` và giờ hệ thống nên tab ở nền vẫn đúng giờ; thời điểm hết giờ do một `setTimeout` riêng canh.

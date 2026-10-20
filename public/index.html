@@ -341,6 +341,7 @@
         </div>
         <div class="theme-filter" id="themeFilter" role="group" aria-label="Lọc nền">
           <button class="chip" type="button" data-filter="all" aria-pressed="true">Tất cả <b data-count="all"></b></button>
+          <button class="chip" type="button" data-filter="fresh" aria-pressed="false">Mới <b data-count="fresh"></b></button>
           <button class="chip" type="button" data-filter="free" aria-pressed="false">Miễn phí <b data-count="free"></b></button>
           <button class="chip" type="button" data-filter="pro" aria-pressed="false">Pro <b data-count="pro"></b></button>
           <button class="chip" type="button" data-filter="season" aria-pressed="false">Ngày lễ &amp; dịp đặc biệt <b data-count="season"></b></button>
@@ -499,6 +500,11 @@
               <stop offset="0" style="stop-color: var(--st-accent2)"/>
               <stop offset="1" style="stop-color: var(--st-accent)"/>
             </linearGradient>
+            <!-- Kiểu "Vạch chia": 60 vạch ngắn + vạch dài ở mỗi mốc 5 phút -->
+            <mask id="stTicks" maskUnits="userSpaceOnUse" x="0" y="0" width="220" height="220">
+              <circle cx="110" cy="110" r="100" fill="none" stroke="#fff" stroke-width="9" stroke-dasharray="2.2 8.272" stroke-dashoffset="1.1"/>
+              <circle cx="110" cy="110" r="100" fill="none" stroke="#fff" stroke-width="18" stroke-dasharray="3.2 49.16" stroke-dashoffset="1.6"/>
+            </mask>
           </defs>
           <circle class="sr-track" cx="110" cy="110" r="100"/>
           <circle class="sr-bar" id="stageRing" cx="110" cy="110" r="100"/>
@@ -531,6 +537,8 @@
           <button type="button" role="radio" data-style="bar">Thanh ngang</button>
           <button type="button" role="radio" data-style="digits">Chỉ số</button>
           <button type="button" role="radio" data-style="flip">Lật số</button>
+          <button type="button" role="radio" data-style="ticks">Vạch chia</button>
+          <button type="button" role="radio" data-style="glass">Thẻ kính</button>
         </div>
       </div>
       <label class="title-field panel-title">
@@ -550,6 +558,13 @@
       </div>
       <div>
         <div class="panel-label">Nền</div>
+        <div class="theme-filter" role="group" aria-label="Lọc nền">
+          <button class="chip" type="button" data-filter="all" aria-pressed="true">Tất cả</button>
+          <button class="chip" type="button" data-filter="fresh" aria-pressed="false">Mới</button>
+          <button class="chip" type="button" data-filter="free" aria-pressed="false">Miễn phí</button>
+          <button class="chip" type="button" data-filter="pro" aria-pressed="false">Pro</button>
+          <button class="chip" type="button" data-filter="season" aria-pressed="false">Ngày lễ</button>
+        </div>
         <div class="theme-grid" id="stageThemeGrid"></div>
         <button class="st-btn photo-btn panel-photo" type="button" data-photo hidden><svg class="ic"><use href="#i-image"/></svg><span>Đổi ảnh nền</span></button>
       </div>

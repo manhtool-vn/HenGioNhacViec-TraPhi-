@@ -14,7 +14,10 @@
     caveat: { family: '"Caveat", cursive', google: 'Caveat:wght@700' },
     mono: { family: '"JetBrains Mono", ui-monospace, Consolas, monospace', google: 'JetBrains+Mono:wght@700' },
     bebas: { family: '"Bebas Neue", Impact, sans-serif', google: 'Bebas+Neue' },
-    dot: { family: '"DotGothic16", ui-monospace, monospace', google: 'DotGothic16' }
+    dot: { family: '"DotGothic16", ui-monospace, monospace', google: 'DotGothic16' },
+    cormorant: { family: '"Cormorant Garamond", Georgia, serif', google: 'Cormorant+Garamond:wght@700' },
+    space: { family: '"Space Grotesk", sans-serif', google: 'Space+Grotesk:wght@700' },
+    audiowide: { family: '"Audiowide", sans-serif', google: 'Audiowide' }
   };
 
   /* tier: 'free' | 'pro'. Nền Pro hiện vẫn cho dùng, chỉ gắn nhãn.
@@ -182,12 +185,146 @@
         glow: '0 0 6px #ffb000, 0 0 24px rgba(255,140,0,.6)', warn: '#ff3b30'
       }
     },
+    /* --- Bộ nền 2026 (fresh: hiện trong bộ lọc "Mới") --- */
+    {
+      id: 'sky', name: 'Trời trong', tier: 'free', fx: 'clouds', fresh: true,
+      vars: {
+        bg: 'radial-gradient(900px 500px at 85% -10%, rgba(255,255,255,.75), transparent 60%), linear-gradient(180deg, #7dbcf0 0%, #b5dcfa 55%, #eaf6ff 100%)',
+        text: '#0b2f55', sub: '#3a5d80', accent: '#1c7ed6', accent2: '#4dabf7', track: 'rgba(11,47,85,.1)',
+        glow: '0 2px 18px rgba(255,255,255,.6)', warn: '#e8590c'
+      }
+    },
+    {
+      id: 'silk', name: 'Lụa màu', tier: 'free', fx: 'mesh', font: 'space', fresh: true,
+      vars: {
+        bg: 'linear-gradient(135deg, #fbf0ff 0%, #eef2ff 50%, #ebfff7 100%)',
+        text: '#2b2350', sub: '#6b6390', accent: '#9b6bff', accent2: '#2fd3b4', track: 'rgba(43,35,80,.1)', warn: '#e8590c'
+      }
+    },
+    {
+      id: 'oled', name: 'Đen tuyền', tier: 'free', fx: null, font: 'space', fresh: true,
+      vars: {
+        bg: '#000',
+        text: '#ffffff', sub: 'rgba(255,255,255,.5)', accent: '#ffffff', accent2: '#868e96', track: 'rgba(255,255,255,.1)'
+      }
+    },
+    {
+      id: 'morning', name: 'Nắng mai', tier: 'free', fx: 'rays', font: 'playfair', fresh: true,
+      vars: {
+        bg: 'radial-gradient(circle at 12% 0%, #fffbe8 0%, rgba(255,251,232,0) 50%), linear-gradient(170deg, #ffeab8 0%, #ffd29a 50%, #ffb48c 100%)',
+        text: '#4a2810', sub: '#8a5a35', accent: '#f76707', accent2: '#fab005', track: 'rgba(74,40,16,.12)', warn: '#c92a2a'
+      }
+    },
+    {
+      id: 'galaxy', name: 'Thiên hà', tier: 'pro', fx: 'galaxy', fresh: true,
+      vars: {
+        bg: 'radial-gradient(1.2px 1.2px at 14% 22%, #fff, transparent), radial-gradient(1px 1px at 82% 16%, #fff, transparent), radial-gradient(1.4px 1.4px at 70% 78%, #fff, transparent), radial-gradient(1px 1px at 24% 74%, #fff, transparent), radial-gradient(ellipse at 50% 50%, #1d1145 0%, #0a0620 55%, #030210 100%)',
+        text: '#f6f0ff', sub: 'rgba(246,240,255,.62)', accent: '#d0a2ff', accent2: '#6ea8ff', track: 'rgba(255,255,255,.08)',
+        glow: '0 0 40px rgba(192,132,252,.4)'
+      }
+    },
+    {
+      id: 'fireflies', name: 'Đom đóm', tier: 'pro', fx: 'fireflies', fresh: true,
+      vars: {
+        bg: 'radial-gradient(900px 500px at 50% 115%, rgba(76,185,68,.22), transparent 70%), linear-gradient(180deg, #040b10 0%, #08170f 60%, #0c2216 100%)',
+        text: '#f4ffe0', sub: 'rgba(244,255,224,.6)', accent: '#d8f36a', accent2: '#7bd88f', track: 'rgba(255,255,255,.08)',
+        glow: '0 0 30px rgba(216,243,106,.28)'
+      }
+    },
+    {
+      id: 'matrix', name: 'Ma trận', tier: 'pro', fx: 'matrix', font: 'mono', fresh: true,
+      vars: {
+        bg: 'radial-gradient(ellipse at center, #04210c 0%, #000 80%)',
+        text: '#e3ffe9', sub: 'rgba(120,255,160,.65)', accent: '#00ff66', accent2: '#00b84a', track: 'rgba(0,255,102,.12)',
+        glow: '0 0 10px rgba(0,255,102,.8), 0 0 40px rgba(0,255,102,.35)', warn: '#ffe14d'
+      }
+    },
+    {
+      id: 'deepsea', name: 'Đáy biển', tier: 'pro', fx: 'deepsea', fresh: true,
+      vars: {
+        bg: 'linear-gradient(180deg, #0b5a85 0%, #074067 38%, #04243e 75%, #020f1c 100%)',
+        text: '#e6fbff', sub: 'rgba(230,251,255,.7)', accent: '#66e3ff', accent2: '#3bc9db', track: 'rgba(255,255,255,.12)',
+        glow: '0 2px 30px rgba(0,40,70,.55)'
+      }
+    },
+    {
+      id: 'lava', name: 'Dung nham', tier: 'pro', fx: 'lava', fresh: true,
+      vars: {
+        bg: 'linear-gradient(180deg, #2b0a3d 0%, #4a0f3a 50%, #1a0626 100%)',
+        text: '#fff1e6', sub: 'rgba(255,241,230,.72)', accent: '#ffb347', accent2: '#ff5e62', track: 'rgba(255,255,255,.12)',
+        glow: '0 2px 30px rgba(40,0,30,.55)'
+      }
+    },
+    {
+      id: 'warp', name: 'Siêu tốc', tier: 'pro', fx: 'warp', font: 'audiowide', fresh: true,
+      vars: {
+        bg: 'radial-gradient(circle at 50% 50%, #0f2059 0%, #050a1f 55%, #000 100%)',
+        text: '#eaf3ff', sub: 'rgba(234,243,255,.62)', accent: '#7dd3fc', accent2: '#a78bfa', track: 'rgba(255,255,255,.08)',
+        glow: '0 0 24px rgba(125,211,252,.5)'
+      }
+    },
+    {
+      id: 'mountains', name: 'Núi sương', tier: 'pro', fx: 'mountains', font: 'playfair', fresh: true,
+      vars: {
+        bg: 'radial-gradient(circle at 80% 34%, #fff3dc 0 2.2%, rgba(255,214,170,.45) 5%, transparent 22%), linear-gradient(180deg, #2e3070 0%, #6b5294 38%, #c47f9c 66%, #f2b48e 100%)',
+        text: '#ffffff', sub: 'rgba(255,255,255,.8)', accent: '#ffe8cc', accent2: '#ffb38a', track: 'rgba(255,255,255,.2)',
+        glow: '0 2px 24px rgba(30,20,70,.5)', warn: '#fff3b0'
+      }
+    },
+    {
+      id: 'hoian', name: 'Phố Hội', tier: 'pro', fx: 'hoian', font: 'playfair', fresh: true,
+      vars: {
+        bg: 'radial-gradient(1000px 520px at 50% 0%, rgba(255,170,80,.28), transparent 70%), linear-gradient(180deg, #2a1440 0%, #5a1f3c 52%, #7a2e2a 100%)',
+        text: '#fff1d6', sub: 'rgba(255,241,214,.76)', accent: '#ffb84d', accent2: '#ff6b4a', track: 'rgba(255,255,255,.14)',
+        glow: '0 2px 24px rgba(30,0,10,.55)'
+      }
+    },
+    {
+      id: 'storm', name: 'Giông bão', tier: 'pro', fx: 'storm', fresh: true,
+      vars: {
+        bg: 'repeating-linear-gradient(105deg, transparent 0 26px, rgba(190,205,255,.05) 26px 27px), radial-gradient(900px 500px at 70% -10%, rgba(140,150,210,.28), transparent 70%), linear-gradient(180deg, #1b1f2e 0%, #10131d 60%, #07080d 100%)',
+        text: '#eef2ff', sub: 'rgba(238,242,255,.6)', accent: '#a5b4fc', accent2: '#818cf8', track: 'rgba(255,255,255,.08)',
+        glow: '0 2px 30px rgba(165,180,252,.25)'
+      }
+    },
+    {
+      id: 'concert', name: 'Sân khấu', tier: 'pro', fx: 'concert', font: 'bebas', fresh: true,
+      vars: {
+        bg: 'radial-gradient(ellipse at 50% 120%, #4a0d70 0%, #15041f 60%, #05010a 100%)',
+        text: '#ffffff', sub: 'rgba(255,255,255,.68)', accent: '#ff4ecd', accent2: '#4cc9f0', track: 'rgba(255,255,255,.1)',
+        glow: '0 0 24px rgba(255,78,205,.5)', warn: '#ffe14d'
+      }
+    },
+    {
+      id: 'holo', name: 'Ánh ngũ sắc', tier: 'pro', fx: 'holo', font: 'space', fresh: true,
+      vars: {
+        bg: 'linear-gradient(135deg, #e7cfff 0%, #a9d2ff 50%, #c8ffe0 100%)',
+        text: '#1d1640', sub: '#463f6e', accent: '#7c3aed', accent2: '#0ea5c6', track: 'rgba(29,22,64,.12)',
+        glow: '0 2px 20px rgba(255,255,255,.55)', warn: '#d9480f'
+      }
+    },
+    {
+      id: 'autumn', name: 'Thu vàng', tier: 'pro', fx: 'leaves', font: 'playfair', fresh: true,
+      vars: {
+        bg: 'radial-gradient(900px 600px at 80% 0%, rgba(255,214,140,.38), transparent 60%), linear-gradient(170deg, #7a3b12 0%, #4a2410 60%, #2a140a 100%)',
+        text: '#fff3e0', sub: 'rgba(255,243,224,.75)', accent: '#ffb347', accent2: '#e8590c', track: 'rgba(255,255,255,.14)',
+        glow: '0 2px 20px rgba(40,15,0,.55)'
+      }
+    },
     {
       id: 'tet', name: 'Tết Nguyên đán', tier: 'pro', fx: 'mai', font: 'playfair', season: true, occasion: { label: 'Mùng 1 Tết âm lịch', lunar: true },
       vars: {
         bg: 'radial-gradient(900px 500px at 50% 0%, rgba(255,214,102,.25), transparent 70%), linear-gradient(170deg, #b3121f 0%, #7a0a14 100%)',
         text: '#ffe8a3', sub: 'rgba(255,232,163,.82)', accent: '#ffd166', accent2: '#ffb703', track: 'rgba(255,255,255,.15)',
         glow: '0 2px 20px rgba(80,0,0,.45)', warn: '#ffffff'
+      }
+    },
+    {
+      id: 'giaothua', name: 'Giao thừa', tier: 'pro', fx: 'fireworks', font: 'bebas', season: true, fresh: true, occasion: { label: 'Đêm 30 Tết', lunar: true },
+      vars: {
+        bg: 'radial-gradient(ellipse at 50% 125%, #6b1420 0%, #250712 52%, #090209 100%)',
+        text: '#ffe8a3', sub: 'rgba(255,232,163,.76)', accent: '#ffd166', accent2: '#ff4d4d', track: 'rgba(255,255,255,.12)',
+        glow: '0 0 30px rgba(255,209,102,.4)', warn: '#ffffff'
       }
     },
     {
@@ -278,6 +415,14 @@
       }
     },
     {
+      id: 'giadinh', name: 'Gia đình Việt Nam', tier: 'pro', fx: 'bokeh', font: 'playfair', season: true, fresh: true, occasion: { label: '28/6', m: 6, d: 28 },
+      vars: {
+        bg: 'radial-gradient(900px 500px at 50% 0%, rgba(255,236,200,.5), transparent 70%), linear-gradient(170deg, #ffb37a 0%, #f4845f 50%, #c8553d 100%)',
+        text: '#fffaf3', sub: 'rgba(255,250,243,.86)', accent: '#fff1d6', accent2: '#ffd8a8', track: 'rgba(255,255,255,.25)',
+        glow: '0 2px 20px rgba(110,40,20,.45)', warn: '#fff3b0'
+      }
+    },
+    {
       id: 'vulan', name: 'Vu Lan báo hiếu', tier: 'pro', fx: 'lantern', season: true, occasion: { label: '15/7 âm lịch', lunar: true },
       vars: {
         bg: 'linear-gradient(180deg, #1a1033 0%, #2b1b4f 55%, #0f2a3d 100%)',
@@ -301,6 +446,14 @@
       }
     },
     {
+      id: 'doanhnhan', name: 'Doanh nhân Việt Nam', tier: 'pro', fx: 'sparkle', font: 'cormorant', season: true, fresh: true, occasion: { label: '13/10', m: 10, d: 13 },
+      vars: {
+        bg: 'radial-gradient(1000px 600px at 50% -10%, rgba(212,175,55,.24), transparent 65%), linear-gradient(180deg, #11203b 0%, #0a1426 60%, #050a14 100%)',
+        text: '#f5e6b8', sub: 'rgba(245,230,184,.7)', accent: '#d4af37', accent2: '#f5e6b8', track: 'rgba(212,175,55,.16)',
+        glow: '0 0 22px rgba(212,175,55,.28)'
+      }
+    },
+    {
       id: 'women2010', name: 'Phụ nữ Việt Nam', tier: 'pro', fx: 'petals', font: 'playfair', season: true, occasion: { label: '20/10', m: 10, d: 20 },
       vars: {
         bg: 'radial-gradient(900px 600px at 50% 0%, rgba(255,255,255,.35), transparent 60%), linear-gradient(160deg, #ff8fab, #fb6f92 50%, #c9184a)',
@@ -317,6 +470,14 @@
       }
     },
     {
+      id: 'megasale', name: 'Siêu sale 11.11', tier: 'pro', fx: 'sparkle', font: 'bebas', season: true, fresh: true, occasion: { label: '11/11 · 12/12', m: 11, d: 11 },
+      vars: {
+        bg: 'radial-gradient(800px 500px at 50% 0%, rgba(255,230,120,.38), transparent 65%), repeating-linear-gradient(135deg, rgba(255,255,255,.05) 0 26px, transparent 26px 52px), linear-gradient(160deg, #ff4d00 0%, #e8005a 55%, #8a0050 100%)',
+        text: '#ffffff', sub: 'rgba(255,255,255,.88)', accent: '#ffe066', accent2: '#ffd43b', track: 'rgba(255,255,255,.22)',
+        glow: '0 3px 24px rgba(120,0,40,.55)', warn: '#ffe066'
+      }
+    },
+    {
       id: 'nhagiao', name: 'Nhà giáo Việt Nam', tier: 'pro', fx: 'confetti', font: 'caveat', season: true, occasion: { label: '20/11', m: 11, d: 20 },
       vars: {
         bg: 'radial-gradient(ellipse at center, #2f5d50 0%, #1f3d34 70%, #142a23 100%)',
@@ -325,10 +486,41 @@
       }
     },
     {
+      id: 'blackfriday', name: 'Black Friday', tier: 'pro', fx: 'sparkle', font: 'bebas', season: true, fresh: true, occasion: { label: 'Thứ Sáu cuối tháng 11' },
+      vars: {
+        bg: 'radial-gradient(900px 500px at 50% 0%, rgba(255,200,80,.2), transparent 70%), linear-gradient(180deg, #141414 0%, #000 100%)',
+        text: '#ffd166', sub: 'rgba(255,209,102,.72)', accent: '#ffd166', accent2: '#f59f00', track: 'rgba(255,209,102,.14)',
+        glow: '0 0 24px rgba(255,190,60,.38)', warn: '#ff6b6b'
+      }
+    },
+    {
+      id: 'quandoi', name: 'Quân đội Nhân dân', tier: 'pro', fx: 'star', font: 'bebas', season: true, fresh: true, occasion: { label: '22/12', m: 12, d: 22 },
+      vars: {
+        bg: 'radial-gradient(circle at 50% 40%, #4f7032 0%, #2f4a1c 60%, #17260c 100%)',
+        text: '#ffe066', sub: 'rgba(255,224,102,.82)', accent: '#ffd60a', accent2: '#e03131', track: 'rgba(255,255,255,.14)',
+        glow: '0 2px 20px rgba(0,0,0,.45)', warn: '#ffffff'
+      }
+    },
+    {
       id: 'birthday', name: 'Sinh nhật', tier: 'pro', fx: 'balloons', season: true, occasion: { label: 'Dịp bất kỳ' },
       vars: {
         bg: 'linear-gradient(160deg, #ffe066 0%, #ffa8a8 50%, #b197fc 100%)',
         text: '#3b2a5c', sub: '#5c4a7c', accent: '#7048e8', accent2: '#f06595', track: 'rgba(59,42,92,.12)', warn: '#e8590c'
+      }
+    },
+    {
+      id: 'wedding', name: 'Lễ cưới', tier: 'pro', fx: 'petals', font: 'cormorant', season: true, fresh: true, occasion: { label: 'Dịp bất kỳ' },
+      vars: {
+        bg: 'radial-gradient(900px 600px at 50% 0%, #fffaf3, transparent 70%), linear-gradient(170deg, #fdf3ea 0%, #f6e1d3 55%, #eac7b8 100%)',
+        text: '#6b3a2e', sub: '#9a6a5c', accent: '#c9a227', accent2: '#e8a0a0', track: 'rgba(107,58,46,.1)', warn: '#c92a2a'
+      }
+    },
+    {
+      id: 'khaitruong', name: 'Khai trương', tier: 'pro', fx: 'confetti', font: 'bebas', season: true, fresh: true, occasion: { label: 'Dịp bất kỳ' },
+      vars: {
+        bg: 'radial-gradient(900px 500px at 50% 0%, rgba(255,214,102,.32), transparent 70%), linear-gradient(170deg, #d00000 0%, #9d0208 60%, #5c0000 100%)',
+        text: '#ffd60a', sub: 'rgba(255,214,10,.86)', accent: '#ffd60a', accent2: '#ffba08', track: 'rgba(255,255,255,.18)',
+        glow: '0 2px 20px rgba(60,0,0,.5)', warn: '#ffffff'
       }
     },
     {
@@ -352,7 +544,11 @@
     tet: 'dantranh', trungthu: 'dantranh', christmas: 'musicbox', newyear: 'odetojoy', valentine: 'canon', thaythuoc: 'pink',
     women83: 'musicbox', hungvuong: 'dantranh', earthday: 'wind', reunification: 'dantranh', thieunhi: 'musicbox',
     graduation: 'odetojoy', vulan: 'dantranh', quockhanh: 'dantranh', khaigiang: 'musicbox', women2010: 'musicbox',
-    halloween: 'wind', nhagiao: 'dantranh', birthday: 'musicbox', photo: 'ambient'
+    halloween: 'wind', nhagiao: 'dantranh', birthday: 'musicbox', photo: 'ambient',
+    sky: 'wind', silk: 'furelise', oled: 'brown', morning: 'bach', galaxy: 'ambient', fireflies: 'gymnopedie', matrix: 'brown',
+    deepsea: 'waves', lava: 'lofi', warp: 'ambient', mountains: 'wind', hoian: 'dantranh', storm: 'rain', concert: 'lofi',
+    holo: 'musicbox', autumn: 'greensleeves', giaothua: 'dantranh', giadinh: 'canon', doanhnhan: 'bach', megasale: 'musicbox',
+    blackfriday: 'lofi', quandoi: 'odetojoy', wedding: 'canon', khaitruong: 'dantranh'
   };
   THEMES.forEach(function (t) { t.music = MUSIC[t.id] || 'brown'; });
 

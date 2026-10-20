@@ -226,6 +226,13 @@ test('liên kết chia sẻ: mã hóa rồi giải mã giữ nguyên cài đặt
   assert.match(TC.encodeShare(cfg), /^[A-Za-z0-9_-]+$/);
 });
 
+test('liên kết chia sẻ giữ được mọi kiểu hiển thị, kể cả Vạch chia và Thẻ kính', () => {
+  for (const style of ['ring', 'bar', 'digits', 'flip', 'ticks', 'glass']) {
+    assert.ok(TC.STYLES.includes(style), style);
+    assert.equal(TC.decodeShare(TC.encodeShare({ ms: 5 * MIN, style })).style, style);
+  }
+});
+
 test('liên kết chia sẻ hỏng hoặc độc hại thì bị bỏ qua / làm sạch', () => {
   assert.equal(TC.decodeShare('%%%'), null);
   assert.equal(TC.decodeShare(Buffer.from('{"t":0}').toString('base64')), null);

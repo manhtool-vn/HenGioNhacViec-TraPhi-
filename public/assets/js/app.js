@@ -15,7 +15,7 @@
   var FOCUS_REVEAL_MS = TC.MIN;     // chế độ tập trung: phút cuối mới hiện việc sắp làm
   var RING_LEN = 2 * Math.PI * 100; // chu vi vòng tròn r=100 trong SVG
   var MAX_SAVED = 12;
-  var STYLES = ['ring', 'bar', 'digits', 'flip']; // kiểu hiển thị toàn màn hình
+  var STYLES = TC.STYLES; // kiểu hiển thị toàn màn hình
   var reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
   var TEMPLATES = [
@@ -1389,19 +1389,21 @@
     if (!stageGridStale) return;
     renderThemeGrid($('stageThemeGrid'));
     stageGridStale = false;
+    applyThemeFilter();
   }
 
-  /* Lọc nền: Tất cả / Miễn phí / Pro / Theo mùa */
+  /* Lọc nền: Tất cả / Mới / Miễn phí / Pro / Theo mùa — dùng chung cho trang và bảng trong khung toàn màn hình */
   var themeFilter = 'all';
   var FILTERS = {
     all: function () { return true; },
+    fresh: function (t) { return !!t.fresh; },
     free: function (t) { return t.tier === 'free'; },
     pro: function (t) { return t.tier === 'pro'; },
     season: function (t) { return !!t.season; }
   };
   function applyThemeFilter() {
     var now = new Date();
-    $('themeGrid').querySelectorAll('.theme-tile').forEach(function (b) {
+    document.querySelectorAll('#themeGrid .theme-tile, #stageThemeGrid .theme-tile').forEach(function (b) {
       var t = TT.get(b.dataset.theme);
       b.hidden = !FILTERS[themeFilter](t);
       // Nhóm ngày lễ: dịp gần nhất lên đầu (ngày âm lịch / dịp bất kỳ xếp sau)
@@ -1531,8 +1533,8 @@
     // Màn hình nhỏ thì bớt hạt cho nhẹ máy
     var k = (window.innerWidth < 700 ? 0.55 : 1) * (scale || 1);
     var N = function (n) { return Math.round(n * k); };
-    if (fx === 'stars') {
-      particles(box, N(45), 'fx-star', function () {
+    if (fx === 'stars' || fx === 'galaxy') {
+      particles(box, N(fx === 'galaxy' ? 55 : 45), 'fx-star', function () {
         var s = rnd(0.8, 2.6).toFixed(1);
         return 'left:' + pct() + ';top:' + pct() + ';width:' + s + 'px;height:' + s + 'px;animation-duration:' + rnd(2, 6).toFixed(1) + 's;animation-delay:-' + rnd(0, 6).toFixed(1) + 's';
       });
@@ -1541,8 +1543,8 @@
         var w = rnd(8, fx === 'mai' ? 22 : 18);
         return 'left:' + pct() + ';width:' + w.toFixed(0) + 'px;height:' + (fx === 'mai' ? w : w * 0.7).toFixed(0) + 'px;animation-duration:' + rnd(10, 20).toFixed(1) + 's;animation-delay:-' + rnd(0, 20).toFixed(1) + 's;opacity:' + rnd(0.5, 0.95).toFixed(2);
       });
-    } else if (fx === 'rain') {
-      particles(box, N(40), 'fx-drop', function () {
+    } else if (fx === 'rain' || fx === 'storm') {
+      particles(box, N(fx === 'storm' ? 55 : 40), 'fx-drop', function () {
         return 'left:' + rnd(0, 130).toFixed(1) + '%;height:' + rnd(50, 110).toFixed(0) + 'px;animation-duration:' + rnd(0.55, 1.1).toFixed(2) + 's;animation-delay:-' + rnd(0, 2).toFixed(2) + 's;opacity:' + rnd(0.3, 0.8).toFixed(2);
       });
     } else if (fx === 'snow') {
@@ -1601,6 +1603,75 @@
       particles(box, N(22), 'fx-ember', function () {
         var s = rnd(2, 5).toFixed(1);
         return 'left:' + pct() + ';width:' + s + 'px;height:' + s + 'px;--dx:' + rnd(-6, 6).toFixed(1) + 'vw;animation-duration:' + rnd(5, 11).toFixed(1) + 's;animation-delay:-' + rnd(0, 11).toFixed(1) + 's';
+      });
+    } else if (fx === 'fireflies') {
+      // Mỗi con đom đóm bay lượn quanh chỗ của nó (3 điểm ngẫu nhiên) và nhấp nháy lệch nhịp nhau
+      var hop = function (n) { return '--x' + n + ':' + rnd(-9, 9).toFixed(1) + 'vw;--y' + n + ':' + rnd(-9, 9).toFixed(1) + 'vh;'; };
+      particles(box, N(34), 'fx-fly', function () {
+        var s = rnd(3, 6).toFixed(1);
+        return 'left:' + rnd(3, 97).toFixed(1) + '%;top:' + rnd(15, 92).toFixed(1) + '%;width:' + s + 'px;height:' + s + 'px;' + hop(1) + hop(2) + hop(3) +
+          'animation-duration:' + rnd(14, 26).toFixed(1) + 's,' + rnd(2.4, 5).toFixed(1) + 's;animation-delay:-' + rnd(0, 20).toFixed(1) + 's,-' + rnd(0, 5).toFixed(1) + 's';
+      });
+    } else if (fx === 'matrix') {
+      // Cột ký tự rơi: chữ đứng yên trong cột, chỉ cả cột trượt xuống nên rất nhẹ
+      var glyphs = 'ｱｲｳｴｵｶｷｸｹｺｻｼｽｾｿﾀﾁﾂﾃﾄﾅﾆﾇﾈﾉﾊﾋﾌﾍﾎﾏﾐﾑﾒﾓﾔﾕﾖﾗﾘﾙﾚﾛﾜﾝ0123456789';
+      var cols = N(30) || 1;
+      particles(box, cols, 'fx-col', function (i) {
+        return 'left:' + ((i + rnd(0.1, 0.9)) * 100 / cols).toFixed(2) + '%;font-size:' + rnd(12, 22).toFixed(0) + 'px;opacity:' + rnd(0.2, 0.7).toFixed(2) +
+          ';animation-duration:' + rnd(6, 14).toFixed(1) + 's;animation-delay:-' + rnd(0, 14).toFixed(1) + 's';
+      });
+      box.querySelectorAll('.fx-col').forEach(function (c) {
+        var len = Math.round(rnd(12, 28)), str = '';
+        for (var j = 0; j < len; j++) str += glyphs[Math.floor(Math.random() * glyphs.length)];
+        c.textContent = str;
+      });
+    } else if (fx === 'deepsea') {
+      particles(box, N(26), 'fx-bubble', function () {
+        var s = rnd(4, 16).toFixed(0);
+        return 'left:' + pct() + ';width:' + s + 'px;height:' + s + 'px;--dx:' + rnd(-3, 3).toFixed(1) + 'vw;animation-duration:' + rnd(9, 20).toFixed(1) + 's;animation-delay:-' + rnd(0, 20).toFixed(1) + 's';
+      });
+    } else if (fx === 'lava') {
+      // Kích thước và quãng trôi tính theo khung chứa, để ô đồng hồ nhỏ trên trang cũng cân đối
+      var lava = [['#ffd166', '#ff7b39'], ['#ffb347', '#ff5e62'], ['#ff8a5c', '#d62f6b'], ['#ffc078', '#f03e3e']];
+      var H = box.clientHeight || window.innerHeight, W = box.clientWidth || window.innerWidth;
+      particles(box, Math.max(4, N(9)), 'fx-blob', function (i) {
+        var s = (Math.min(W, H) * rnd(0.1, 0.24)).toFixed(0), c = lava[i % lava.length];
+        return 'left:' + rnd(5, 85).toFixed(1) + '%;top:' + rnd(30, 85).toFixed(1) + '%;width:' + s + 'px;height:' + s + 'px;--c1:' + c[0] + ';--c2:' + c[1] +
+          ';--dx:' + rnd(-8, 8).toFixed(1) + 'vw;--dy:' + (H * rnd(-0.7, -0.25)).toFixed(0) + 'px;animation-duration:' + rnd(18, 34).toFixed(1) + 's;animation-delay:-' + rnd(0, 30).toFixed(1) + 's';
+      });
+    } else if (fx === 'warp') {
+      // Vệt sao lao ra từ tâm màn hình theo mọi hướng
+      var tints = ['#ffffff', '#bae6fd', '#ddd6fe', '#ffffff'];
+      particles(box, N(70), 'fx-streak', function (i) {
+        return '--a:' + rnd(0, 360).toFixed(1) + 'deg;--c:' + tints[i % tints.length] + ';--l:' + rnd(6, 16).toFixed(1) + 'vmin;--r0:' + rnd(2, 14).toFixed(1) + 'vmin;' +
+          'animation-duration:' + rnd(1.2, 3.2).toFixed(2) + 's;animation-delay:-' + rnd(0, 3.2).toFixed(2) + 's';
+      });
+    } else if (fx === 'hoian') {
+      // Đèn lồng treo trên dây, đung đưa nhẹ
+      var lamps = ['#e03131', '#f59f00', '#e8590c', '#c2255c', '#f08c00', '#9c36b5'];
+      var nl = Math.max(4, N(10));
+      particles(box, nl, 'fx-hang', function (i) {
+        var w = rnd(26, 48).toFixed(0);
+        return 'left:' + ((i + rnd(0.15, 0.85)) * 100 / nl).toFixed(1) + '%;--w:' + w + 'px;height:' + rnd(10, 36).toFixed(1) + '%;--c:' + lamps[i % lamps.length] +
+          ';animation-duration:' + rnd(3.5, 6).toFixed(1) + 's;animation-delay:-' + rnd(0, 6).toFixed(1) + 's';
+      });
+    } else if (fx === 'concert') {
+      // Cột sóng nhạc dưới đáy sân khấu
+      var bars = N(40) || 1;
+      particles(box, bars, 'fx-eq', function (i) {
+        return 'left:' + (i * 100 / bars).toFixed(2) + '%;width:calc(' + (100 / bars).toFixed(2) + '% - 3px);height:' + rnd(8, 24).toFixed(1) + '%;' +
+          'animation-duration:' + rnd(0.4, 1).toFixed(2) + 's;animation-delay:-' + rnd(0, 1).toFixed(2) + 's';
+      });
+    } else if (fx === 'leaves') {
+      var fall = ['#ffb347', '#e8590c', '#ffd43b', '#c92a2a', '#f08c00', '#a0522d'];
+      particles(box, N(18), 'fx-leaf', function (i) {
+        var w = rnd(12, 26);
+        return 'left:' + pct() + ';width:' + w.toFixed(0) + 'px;height:' + (w * 0.75).toFixed(0) + 'px;--c:' + fall[i % fall.length] + ';animation-duration:' + rnd(10, 20).toFixed(1) + 's;animation-delay:-' + rnd(0, 20).toFixed(1) + 's;opacity:' + rnd(0.6, 0.95).toFixed(2);
+      });
+    } else if (fx === 'sparkle') {
+      var glints = ['var(--st-accent)', '#ffffff', 'var(--st-accent2)'];
+      particles(box, N(28), 'fx-spk', function (i) {
+        return 'left:' + pct() + ';top:' + pct() + ';width:' + rnd(10, 28).toFixed(0) + 'px;--c:' + glints[i % glints.length] + ';animation-duration:' + rnd(2.2, 4.6).toFixed(1) + 's;animation-delay:-' + rnd(0, 4.6).toFixed(1) + 's';
       });
     }
   }

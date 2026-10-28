@@ -1371,6 +1371,8 @@
       b.appendChild(art);
       b.appendChild(name);
       b.setAttribute('aria-label', 'Nền ' + theme.name + (theme.tier === 'pro' ? ' (Pro)' : ''));
+      // nền Pro dùng được nhờ chương trình miễn phí (chưa mua): xem xong lời giới thiệu mới chọn được (mt-promo.js gateClicks)
+      if (theme.tier === 'pro' && TT.lockPremium && !TT.isLocked(theme) && !TT.paidPro && (TT.paidOwned || []).indexOf(theme.id) === -1) b.dataset.mpGate = 'dùng nền Pro';
       b.addEventListener('click', function () { chooseTheme(theme); });
       grid.appendChild(b);
     });

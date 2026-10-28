@@ -158,6 +158,9 @@
     var kept = (u && u.freeKeep) || [];
     var open = function (k) { return !!(free && free.features.indexOf(k) !== -1) || kept.indexOf(k) !== -1; };
     TT.lockPremium = !!cfg.lockPremium;
+    // đã trả tiền (mua Pro / mua lẻ nền) — không bị bắt xem lời giới thiệu khi chọn nền Pro
+    TT.paidPro = !!(u && u.pro);
+    TT.paidOwned = (u && u.ownedThemes) || [];
     TT.freeThemes = open('themes');
     TT.freeMusic = open('music');
     TT.freeUntil = free && free.features.indexOf('themes') !== -1 ? free.endsAt : 0;
@@ -218,6 +221,8 @@
       // Quản trị viên không bị tự hiện (vẫn bấm dải xanh để xem)
       if (!admin) P.scheduleAnnounce(free, brand, Object.assign(announceOpts(free), { guard: guard }));
     }
+    // Chọn nền Pro đang mở miễn phí: xem xong lời giới thiệu mới dùng được (ô nền có data-mp-gate) — quản trị viên được miễn
+    if (brand) P.gateClicks(brand, { exempt: function () { return !!(st.user && st.user.role === 'admin'); } });
     if (brand && !paying) {
       var kick = free ? 'Mở Pro miễn phí, đồng hành cùng' : 'Hẹn giờ miễn phí, đồng hành cùng';
       var host = document.querySelector('[data-mp-chip]');

@@ -88,6 +88,7 @@
         'Thư viện nhạc: nhạc Pro nghe được ngay',
         'Popup giới thiệu doansinhvien24h (gia sư lập trình, kho đồ án) cho người dùng bản miễn phí; cuối trang có dòng "Đồng hành cùng doansinhvien24h" để mở lại'
       ],
+      gateAction: 'dùng nền Pro miễn phí', gateWhere: 'chọn một nền Pro đang được mở miễn phí (người đã mua nền / gói Pro không bị hỏi)',
       load: function () { return promoCall('GET', '/admin/promo'); },
       saveFree: function (f) { return promoCall('PUT', '/admin/promo/free', { free: f }); },
       saveBrand: function (b) { return promoCall('PUT', '/admin/promo/brand', { brand: b }); },

@@ -79,14 +79,14 @@
   function loadPromo() {
     var P = window.MTPromo;
     window.MTPromoAdmin.mount($('promoAdmin'), {
-      base: P.defaults('hengio', '/assets/img/mark-192.png'),
+      base: P.defaults('hengio', '/assets/img/dsv24h.svg'),
       features: FEATURES,
       keepLabel: 'Tài khoản đăng nhập trong thời gian miễn phí được giữ các quyền lợi đã mở vĩnh viễn, kể cả khi chương trình kết thúc',
       where: [
         'Trang chính: dải xanh đếm ngược ở đầu trang, thông báo tự hiện một lần mỗi phiên (không hiện khi đang đếm giờ hay ở màn hình lớn)',
         'Ô chọn nền: nền Pro mở khoá, dòng "Nền Pro đang miễn phí" với giá gốc gạch ngang',
         'Thư viện nhạc: nhạc Pro nghe được ngay',
-        'Popup giới thiệu ManhTool cho người dùng bản miễn phí; cuối trang có dòng "Bản miễn phí bởi ManhTool" để mở lại'
+        'Popup giới thiệu doansinhvien24h (gia sư lập trình, kho đồ án) cho người dùng bản miễn phí; cuối trang có dòng "Đồng hành cùng doansinhvien24h" để mở lại'
       ],
       load: function () { return promoCall('GET', '/admin/promo'); },
       saveFree: function (f) { return promoCall('PUT', '/admin/promo/free', { free: f }); },

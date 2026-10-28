@@ -11,7 +11,7 @@ const FEATURES = [
   { key: 'music', label: 'Nhạc nền Pro', hint: 'Các bản nhạc Pro trong thư viện và âm thanh tập trung Pro' }
 ];
 const KEYS = FEATURES.map((f) => f.key);
-const BASE = P.defaults('hengio', '/assets/img/mark-192.png');
+const BASE = P.defaults('hengio', '/assets/img/dsv24h.svg');
 
 function createPromoService({ db, now }) {
   const s = () => db.data.settings;

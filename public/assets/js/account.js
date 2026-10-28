@@ -219,9 +219,9 @@
       if (!admin) P.scheduleAnnounce(free, brand, Object.assign(announceOpts(free), { guard: guard }));
     }
     if (brand && !paying) {
-      var kick = free ? 'Mở miễn phí bởi' : 'Hẹn giờ miễn phí bởi';
+      var kick = free ? 'Mở Pro miễn phí, đồng hành cùng' : 'Hẹn giờ miễn phí, đồng hành cùng';
       var host = document.querySelector('[data-mp-chip]');
-      if (host) P.chip(brand, host, { label: 'Bản miễn phí bởi', kick: kick });
+      if (host) P.chip(brand, host, { label: 'Đồng hành cùng', kick: kick });
       if (!admin) P.schedule(brand, { kick: kick, guard: guard });
     }
   }

@@ -475,7 +475,7 @@ test('mở miễn phí: hẹn giờ, mở nhạc Pro, giữ vĩnh viễn khi đ�
     // chưa có chương trình: nhạc Pro khoá với khách, có lời giới thiệu mặc định
     let cfg = (await req(s.base, 'GET', '/api/config')).data;
     assert.equal(cfg.free, null);
-    assert.equal(cfg.brand.name, 'ManhTool');
+    assert.equal(cfg.brand.name, 'doansinhvien24h');
     assert.ok(cfg.brand.products.length === 3 && !cfg.brand.products.some((p) => /hengio/.test(p.url)), 'không tự giới thiệu chính mình');
     assert.equal((await req(s.base, 'GET', '/api/music')).data.tracks[0].locked, true);
 
@@ -521,7 +521,7 @@ test('mở miễn phí: hẹn giờ, mở nhạc Pro, giữ vĩnh viễn khi đ�
 
     // lời giới thiệu: lọc link/ảnh lạ, tắt thì trang không nhận
     r = await req(s.base, 'PUT', '/api/admin/promo/brand', { jar: c.jar, body: { brand: { enabled: false, name: 'Shop', logo: '//evil.example/x.png', website: 'javascript:alert(1)', lock: 99, products: [{ name: 'A', icon: '<b>', url: 'https://a.vn' }] } } });
-    assert.equal(r.data.brand.logo, '/assets/img/mark-192.png');
+    assert.equal(r.data.brand.logo, '/assets/img/dsv24h.svg');
     assert.equal(r.data.brand.website, '');
     assert.equal(r.data.brand.lock, 15);
     assert.equal(r.data.brand.products[0].icon, 'sparkles');

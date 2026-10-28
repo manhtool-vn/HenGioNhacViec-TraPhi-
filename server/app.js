@@ -20,6 +20,7 @@ const { musicRoutes } = require('./routes/music');
 const { serveStatic } = require('./routes/static');
 const { createPaymentService } = require('./services/payments');
 const { createMusicService } = require('./services/music');
+const { createPromoService } = require('./services/promo');
 
 const CSRF_HEADER = 'x-requested-with';
 const CSRF_VALUE = 'hengio';
@@ -40,6 +41,7 @@ function createApp(opts) {
   ctx.users = createUserService(ctx);
   ctx.payments = createPaymentService(ctx);
   ctx.music = createMusicService(ctx);
+  ctx.promo = createPromoService(ctx);
 
   // Lấy người dùng đang đăng nhập; nếu không có thì trả lỗi 401 (code token_expired để trang tự làm mới token)
   ctx.requireUser = function (req, res) {

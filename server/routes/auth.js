@@ -17,7 +17,8 @@ async function authRoutes(ctx, req, res, url) {
   const tooMany = () => ctx.limited('auth:' + clientIp(req, config), 60, 15 * 60000);
 
   if (p === '/api/config' && m === 'GET') {
-    json(res, config, 200, { googleLogin: google.settings().ready, lockPremium: !!db.data.settings.lockPremium, shop: ctx.payments.publicInfo() });
+    // free: chương trình mở miễn phí đang chạy · brand: lời giới thiệu ManhTool cho người dùng bản miễn phí
+    json(res, config, 200, Object.assign({ googleLogin: google.settings().ready, lockPremium: !!db.data.settings.lockPremium, shop: ctx.payments.publicInfo() }, ctx.promo.publicInfo()));
     return true;
   }
 

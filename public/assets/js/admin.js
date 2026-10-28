@@ -61,8 +61,47 @@
       if (b.dataset.tab === 'orders') loadOrders();
       if (b.dataset.tab === 'music') loadMusic();
       else stopListen();
+      if (b.dataset.tab === 'promo') loadPromo();
     });
   });
+
+  /* ---------- Miễn phí & giới thiệu ---------- */
+  var FEATURES = [
+    { key: 'themes', label: 'Nền Pro & nền mùa lễ', hint: 'Mọi nền Pro, nền Lễ Tết và nền "Ảnh của bạn"' },
+    { key: 'music', label: 'Nhạc nền Pro', hint: 'Các bản nhạc Pro trong thư viện và âm thanh tập trung Pro' }
+  ];
+  function promoCall(method, path, body) {
+    return api(method, path, body).then(function (r) {
+      if (!r.ok) throw new Error((r.data && r.data.error) || 'Lỗi máy chủ');
+      return r.data;
+    });
+  }
+  function loadPromo() {
+    var P = window.MTPromo;
+    window.MTPromoAdmin.mount($('promoAdmin'), {
+      base: P.defaults('hengio', '/assets/img/mark-192.png'),
+      features: FEATURES,
+      keepLabel: 'Tài khoản đăng nhập trong thời gian miễn phí được giữ các quyền lợi đã mở vĩnh viễn, kể cả khi chương trình kết thúc',
+      where: [
+        'Trang chính: dải xanh đếm ngược ở đầu trang, thông báo tự hiện một lần mỗi phiên (không hiện khi đang đếm giờ hay ở màn hình lớn)',
+        'Ô chọn nền: nền Pro mở khoá, dòng "Nền Pro đang miễn phí" với giá gốc gạch ngang',
+        'Thư viện nhạc: nhạc Pro nghe được ngay',
+        'Popup giới thiệu ManhTool cho người dùng bản miễn phí; cuối trang có dòng "Bản miễn phí bởi ManhTool" để mở lại'
+      ],
+      load: function () { return promoCall('GET', '/admin/promo'); },
+      saveFree: function (f) { return promoCall('PUT', '/admin/promo/free', { free: f }); },
+      saveBrand: function (b) { return promoCall('PUT', '/admin/promo/brand', { brand: b }); },
+      announce: function (f, brand) {
+        P.announce(f, brand, {
+          force: true, title: 'Nền & nhạc Pro đang miễn phí', text: 'Chọn nền đẹp, bật nhạc tập trung rồi bắt đầu đếm giờ — không cần thanh toán.',
+          perks: ['Mọi nền Pro và nền Lễ Tết', 'Dùng ảnh của bạn làm nền', 'Nhạc nền Pro giúp tập trung', f.keep ? 'Đăng nhập là giữ vĩnh viễn' : 'Không cần thanh toán'],
+          cta: { label: 'Chọn nền Pro ngay' },
+          note: f.keep ? 'Đăng nhập Google trong thời gian này để giữ quyền lợi vĩnh viễn, kể cả khi chương trình kết thúc.' : 'Hết chương trình, nền và nhạc Pro khoá lại như cũ.'
+        });
+      },
+      toast: function (m) { toast(m); }
+    });
+  }
 
   /* ---------- Thư viện nhạc nền ---------- */
   var listen = { el: null, id: null };

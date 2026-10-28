@@ -461,3 +461,71 @@ test('nhận diện định dạng nhạc bằng byte đầu file', () => {
   assert.equal(sniffAudio(pad('<html>')), null);
   assert.equal(sniffAudio(pad('MZ')), null);
 });
+
+/* ---------- Miễn phí & giới thiệu ---------- */
+test('mở miễn phí: hẹn giờ, mở nhạc Pro, giữ vĩnh viễn khi đăng nhập, hết giờ khoá lại, lời giới thiệu', async () => {
+  const s = await startServer();
+  try {
+    const admin = await login(s.base, 'a');
+    const user = await login(s.base, 'b');
+    s.db.data.music.t1 = { id: '11111111-1111-4111-8111-111111111111', title: 'Pro', artist: 'X', tier: 'pro', active: true, createdAt: 1, order: 0 };
+    await req(s.base, 'PUT', '/api/admin/settings', { jar: admin.jar, body: { lockPremium: true } });
+    assert.equal((await req(s.base, 'PUT', '/api/admin/promo/free', { jar: user.jar, body: { free: null } })).status, 403);
+
+    // chưa có chương trình: nhạc Pro khoá với khách, có lời giới thiệu mặc định
+    let cfg = (await req(s.base, 'GET', '/api/config')).data;
+    assert.equal(cfg.free, null);
+    assert.equal(cfg.brand.name, 'ManhTool');
+    assert.ok(cfg.brand.products.length === 3 && !cfg.brand.products.some((p) => /hengio/.test(p.url)), 'không tự giới thiệu chính mình');
+    assert.equal((await req(s.base, 'GET', '/api/music')).data.tracks[0].locked, true);
+
+    // cấu hình sai bị chặn
+    const bad = async (free) => (await req(s.base, 'PUT', '/api/admin/promo/free', { jar: admin.jar, body: { free } })).data.error;
+    assert.match(await bad({ features: [] }), /ít nhất một/);
+    assert.match(await bad({ features: ['themes'], startsAt: s.clock.t + 5000, endsAt: s.clock.t + 1000 }), /sau giờ bắt đầu/);
+    assert.match(await bad({ features: ['music'], endsAt: s.clock.t - 1 }), /đã qua/);
+
+    // hẹn bắt đầu sau 1 giờ, chạy 1 ngày, giữ vĩnh viễn
+    const start = s.clock.t + 3600e3, end = start + 86400e3;
+    let r = await req(s.base, 'PUT', '/api/admin/promo/free', { jar: admin.jar, body: { free: { features: ['themes', 'music', 'la'], label: 'Khai trương', startsAt: start, endsAt: end, keep: true } } });
+    assert.equal(r.status, 200);
+    assert.deepEqual(r.data.free.features, ['themes', 'music']);
+    assert.equal(r.data.running, false);
+    assert.equal((await req(s.base, 'GET', '/api/config')).data.free, null, 'chưa tới giờ thì chưa mở');
+
+    s.clock.t = start + 1000;
+    cfg = (await req(s.base, 'GET', '/api/config')).data;
+    assert.equal(cfg.free.label, 'Khai trương');
+    assert.equal((await req(s.base, 'GET', '/api/music')).data.tracks[0].locked, false, 'khách nghe được nhạc Pro');
+    const user2 = await login(s.base, 'b'); // phiên 15 phút đã hết sau 1 giờ
+    const me = (await req(s.base, 'GET', '/api/me', { jar: user2.jar })).data.user;
+    assert.deepEqual(me.freeKeep, ['themes', 'music'], 'tài khoản mở trang lúc miễn phí được giữ');
+    assert.equal(me.pro, false);
+
+    // hết giờ: khách bị khoá lại, tài khoản được giữ vẫn nghe được
+    s.clock.t = end + 1;
+    assert.equal((await req(s.base, 'GET', '/api/config')).data.free, null);
+    assert.equal((await req(s.base, 'GET', '/api/music')).data.tracks[0].locked, true);
+    const user3 = await login(s.base, 'b');
+    assert.equal((await req(s.base, 'GET', '/api/music', { jar: user3.jar })).data.tracks[0].locked, false);
+
+    // không giữ vĩnh viễn: tài khoản mới không được ghi nhận
+    const a2 = await login(s.base, 'a');
+    await req(s.base, 'PUT', '/api/admin/promo/free', { jar: a2.jar, body: { free: { features: ['music'], keep: false } } });
+    const c = await login(s.base, 'a');
+    assert.deepEqual((await req(s.base, 'GET', '/api/me', { jar: c.jar })).data.user.freeKeep, []);
+    r = await req(s.base, 'GET', '/api/admin/promo', { jar: c.jar });
+    assert.equal(r.data.running, true);
+    assert.equal(r.data.stats[0].value, 1);
+    assert.equal((await req(s.base, 'PUT', '/api/admin/promo/free', { jar: c.jar, body: { free: null } })).data.free, null);
+
+    // lời giới thiệu: lọc link/ảnh lạ, tắt thì trang không nhận
+    r = await req(s.base, 'PUT', '/api/admin/promo/brand', { jar: c.jar, body: { brand: { enabled: false, name: 'Shop', logo: '//evil.example/x.png', website: 'javascript:alert(1)', lock: 99, products: [{ name: 'A', icon: '<b>', url: 'https://a.vn' }] } } });
+    assert.equal(r.data.brand.logo, '/assets/img/mark-192.png');
+    assert.equal(r.data.brand.website, '');
+    assert.equal(r.data.brand.lock, 15);
+    assert.equal(r.data.brand.products[0].icon, 'sparkles');
+    assert.equal((await req(s.base, 'GET', '/api/config')).data.brand, null);
+    assert.ok((await req(s.base, 'GET', '/api/admin/overview', { jar: c.jar })).data.audit.some((a) => a.action === 'Đổi lời giới thiệu'));
+  } finally { s.server.close(); }
+});

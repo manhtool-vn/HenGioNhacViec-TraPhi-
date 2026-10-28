@@ -244,9 +244,17 @@
   // Gọi lại khi trạng thái tài khoản / cấu hình thay đổi
   function refresh() {
     var s = shop(), u = acc().user;
-    var on = available() && !(u && u.pro);
+    var kept = !!(u && (u.freeKeep || []).indexOf('themes') !== -1);
+    var on = available() && !(u && u.pro) && !kept;
     $('shopNote').hidden = !on;
-    if (on) {
+    if (on && TT.freeThemes) {
+      // Đang mở miễn phí: giá gốc gạch ngang
+      var until = TT.freeUntil ? new Date(TT.freeUntil) : null;
+      $('shopNote').querySelector('b').textContent = 'Nền Pro đang miễn phí';
+      $('shopNoteText').innerHTML = 'Dùng ngay mọi nền Pro' + (until ? ' đến ' + until.getHours() + ':' + String(until.getMinutes()).padStart(2, '0') + ' ' + until.toLocaleDateString('vi-VN') : '') +
+        ' · giá thường <s>' + money(s.theme.price) + '</s>/nền, gói Pro <s>' + money(s.pro.price) + '</s>';
+    } else if (on) {
+      $('shopNote').querySelector('b').textContent = 'Mở khóa nền Pro';
       $('shopNoteText').textContent = 'Từ ' + money(s.theme.price) + '/nền · Gói Pro ' + money(s.pro.price) + ' dùng trọn đời.';
     }
     // Vừa đăng nhập xong để mua → mở lại đúng gói đã chọn

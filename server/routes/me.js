@@ -14,6 +14,7 @@ async function meRoutes(ctx, req, res, url) {
     if (a.error === 'none') { json(res, config, 200, { user: null }); return true; }
     if (a.error) { json(res, config, 401, { error: 'Phiên đăng nhập hết hạn', code: 'token_expired' }); return true; }
     const u = a.user;
+    ctx.promo.claim(u); // đang mở miễn phí có "giữ vĩnh viễn" → ghi nhận cho tài khoản này
     json(res, config, 200, { user: users.toPublic(u), sync: { version: u.sync.version, updatedAt: u.sync.updatedAt }, sessions: tokens.activeDevices(u.id) });
     return true;
   }

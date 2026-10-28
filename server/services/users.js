@@ -12,7 +12,9 @@ function createUserService({ config, db, now }) {
   function toPublic(u) {
     return {
       id: u.id, email: u.email, name: u.name, picture: u.picture || '', role: u.role, pro: !!u.pro,
-      ownedThemes: Array.isArray(u.ownedThemes) ? u.ownedThemes.slice() : [], createdAt: u.createdAt
+      ownedThemes: Array.isArray(u.ownedThemes) ? u.ownedThemes.slice() : [], createdAt: u.createdAt,
+      // quyền lợi được giữ vĩnh viễn từ chương trình mở miễn phí ('themes', 'music')
+      freeKeep: Array.isArray(u.freeKeep) ? u.freeKeep.slice() : []
     };
   }
 

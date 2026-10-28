@@ -52,9 +52,9 @@ async function musicRoutes(ctx, req, res, url) {
   const p = url.pathname;
   const m = req.method;
 
-  // Nhạc Pro chỉ khóa khi đang bán nền, giống nền Pro
+  // Nhạc Pro chỉ khóa khi đang bán nền, giống nền Pro; đang mở miễn phí nhạc Pro (hoặc được giữ từ chương trình) thì nghe được
   function canPlay(t, user) {
-    if (t.tier !== 'pro' || !db.data.settings.lockPremium) return true;
+    if (t.tier !== 'pro' || ctx.promo.has(user, 'music')) return true;
     return !!(user && (user.pro || user.role === 'admin'));
   }
 

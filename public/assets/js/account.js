@@ -152,12 +152,78 @@
 
   /* ---------- Quyền Pro ---------- */
   function applyEntitlement() {
-    TT.lockPremium = !!(st.cfg && st.cfg.lockPremium);
+    var cfg = st.cfg || {}, u = st.user;
+    // Chương trình mở miễn phí đang chạy, hoặc quyền lợi được giữ vĩnh viễn từ chương trình trước (user.freeKeep)
+    var free = window.MTPromo ? window.MTPromo.freeOn(cfg.free) : null;
+    var kept = (u && u.freeKeep) || [];
+    var open = function (k) { return !!(free && free.features.indexOf(k) !== -1) || kept.indexOf(k) !== -1; };
+    TT.lockPremium = !!cfg.lockPremium;
+    TT.freeThemes = open('themes');
+    TT.freeMusic = open('music');
+    TT.freeUntil = free && free.features.indexOf('themes') !== -1 ? free.endsAt : 0;
     TT.owned.length = 0;
-    if (st.user && st.user.pro) TT.list.forEach(function (t) { if (t.tier === 'pro') TT.owned.push(t.id); });
-    else if (st.user && Array.isArray(st.user.ownedThemes)) st.user.ownedThemes.forEach(function (id) { TT.owned.push(id); });
+    if ((u && u.pro) || TT.freeThemes) TT.list.forEach(function (t) { if (t.tier === 'pro') TT.owned.push(t.id); });
+    else if (u && Array.isArray(u.ownedThemes)) u.ownedThemes.forEach(function (id) { TT.owned.push(id); });
+    var note = $('themeNoteText');
+    if (note) {
+      note.textContent = !TT.lockPremium ? 'Các nền Pro đang cho dùng thử miễn phí.'
+        : kept.indexOf('themes') !== -1 ? 'Bạn được giữ mọi nền Pro vĩnh viễn từ chương trình miễn phí.'
+          : 'Các nền Pro đang mở miễn phí' + (TT.freeUntil ? ' đến ' + clock(TT.freeUntil) + ' ' + new Date(TT.freeUntil).toLocaleDateString('vi-VN') : '') + '.';
+    }
     if (window.TimerApp) window.TimerApp.refreshThemes();
     if (window.TimerShop) window.TimerShop.refresh();
+  }
+
+  /* ---------- Chương trình mở miễn phí & lời giới thiệu ManhTool (mt-promo.js) ---------- */
+  var promoStarted = false;
+  function freeTitle(f) {
+    var t = f.features.indexOf('themes') !== -1, m = f.features.indexOf('music') !== -1;
+    return t && m ? 'Nền & nhạc Pro đang miễn phí' : t ? 'Mọi nền Pro đang miễn phí' : 'Nhạc nền Pro đang miễn phí';
+  }
+  function announceOpts(f, force) {
+    var u = st.user, t = f.features.indexOf('themes') !== -1, m = f.features.indexOf('music') !== -1;
+    var pro = TT.list.filter(function (x) { return x.tier === 'pro'; }).length;
+    var canKeep = f.keep && st.cfg.googleLogin;
+    var perks = [];
+    if (t) perks.push(pro + ' nền Pro và nền Lễ Tết', 'Dùng ảnh của bạn làm nền');
+    if (m) perks.push('Nhạc nền Pro giúp tập trung');
+    perks.push(canKeep ? 'Đăng nhập là giữ vĩnh viễn' : 'Không cần thanh toán');
+    var target = document.querySelector(t ? '#themeGrid' : '.music-group') || document.body;
+    return {
+      force: force, title: freeTitle(f),
+      text: 'Chọn nền đẹp, bật nhạc tập trung rồi bắt đầu đếm giờ — không cần thanh toán.',
+      perks: perks,
+      cta: canKeep && !u ? { label: 'Đăng nhập để giữ vĩnh viễn', onClick: login }
+        : { label: t ? 'Chọn nền Pro ngay' : 'Bật nhạc Pro ngay', onClick: function () { target.scrollIntoView({ behavior: 'smooth', block: 'center' }); } },
+      note: !canKeep ? 'Hết chương trình, nền và nhạc Pro khoá lại như cũ.'
+        : u ? 'Tài khoản ' + u.email + ' đã được giữ các quyền lợi này vĩnh viễn.'
+          : 'Đăng nhập Google trong thời gian này để giữ quyền lợi vĩnh viễn, kể cả khi chương trình kết thúc.'
+    };
+  }
+  // Hết giờ chương trình khi đang mở trang → lấy lại cấu hình, khoá lại nền/nhạc Pro
+  function reloadConfig() {
+    api('GET', '/config').then(function (r) { if (r.ok) { st.cfg = r.data; applyEntitlement(); } }, function () {});
+  }
+  function promoUi() {
+    var P = window.MTPromo;
+    if (!P || !st.cfg || promoStarted) return;
+    promoStarted = true;
+    var u = st.user, admin = !!(u && u.role === 'admin');
+    var free = P.freeOn(st.cfg.free), brand = st.cfg.brand;
+    var paying = !!(u && (u.pro || (u.ownedThemes || []).length));
+    // Không chen ngang khi đang đếm giờ, đang ở màn hình lớn hoặc đang mở hộp thoại khác
+    var guard = function () { return !(window.TimerApp && window.TimerApp.isBusy()) && $('stage').hidden; };
+    if (free) {
+      P.bar(free, { text: freeTitle(free), onClick: function () { P.announce(free, brand, announceOpts(free, true)); }, onEnd: reloadConfig });
+      // Quản trị viên không bị tự hiện (vẫn bấm dải xanh để xem)
+      if (!admin) P.scheduleAnnounce(free, brand, Object.assign(announceOpts(free), { guard: guard }));
+    }
+    if (brand && !paying) {
+      var kick = free ? 'Mở miễn phí bởi' : 'Hẹn giờ miễn phí bởi';
+      var host = document.querySelector('[data-mp-chip]');
+      if (host) P.chip(brand, host, { label: 'Bản miễn phí bởi', kick: kick });
+      if (!admin) P.schedule(brand, { kick: kick, guard: guard });
+    }
   }
 
   /* ---------- Giao diện ---------- */
@@ -357,6 +423,7 @@
         }
         renderHeader();
         decorateUnlock();
+        promoUi();
         if (st.user) sync('load');
       });
     }, function () { /* không có máy chủ */ });

@@ -2235,7 +2235,8 @@
     return !!(a && a.user && a.user.pro);
   }
   // Nhạc Pro chỉ khóa khi đang bán nền; người có gói Pro hoặc đang dùng nền Pro thì nghe được
-  function musicLocked(s) { return !!(s && s.tier === 'pro' && TT.lockPremium && !userIsPro()); }
+  // Đang mở miễn phí nhạc Pro (hoặc được giữ từ chương trình miễn phí) thì cũng nghe được
+  function musicLocked(s) { return !!(s && s.tier === 'pro' && TT.lockPremium && !userIsPro() && !TT.freeMusic); }
 
   function themeMusicId() {
     var t = TT.get(opts.theme), s = TM.get(t.music) || TM.get('brown');
@@ -2676,7 +2677,7 @@
     refreshThemes: function () {
       if (TT.isLocked(TT.get(opts.theme))) { opts.theme = TT.list[0].id; saveOpts(); }
       renderThemeGrids();
-      $('themeNote').hidden = TT.lockPremium;
+      $('themeNote').hidden = TT.lockPremium && !TT.freeThemes;
       if (stageOpen) applyStageTheme();
       applyCardTheme();
       renderMusicSelects(); // quyền Pro đổi → nhạc Pro mở / khóa theo
@@ -2692,7 +2693,7 @@
   applyPhoto();
   renderThemeGrids();
   applyCardTheme();
-  $('themeNote').hidden = TT.lockPremium;
+  $('themeNote').hidden = TT.lockPremium && !TT.freeThemes;
   renderPlanEditor();
   renderTasks();
   renderPick();
